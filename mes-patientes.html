@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MAMA+ – Mes patientes</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header role="banner" class="tools-header">
+      <div class="header-left">
+        <a href="index-professionnel.html" style="color: #fff; text-decoration: none; font-size: 1.5rem; margin-right: 1rem;">←</a>
+        <span class="header-icon">👥</span>
+        <h1>MAMA+ – Mes patientes</h1>
+      </div>
+      <div id="auth-section" role="navigation">
+        <div id="user-info" class="hidden" aria-live="polite">
+          <span id="user-name" aria-label="Nom de l'utilisateur"></span>
+          <button id="logout-button" type="button" aria-label="Se déconnecter">Déconnexion</button>
+        </div>
+      </div>
+    </header>
+
+    <main role="main" style="padding: 2rem;">
+      <div class="card" id="patients-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2 style="margin: 0;">Patientes suivies</h2>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button id="add-patiente-btn-section" type="button" class="btn-primary" aria-label="Ouvrir le formulaire pour ajouter une nouvelle patiente">+ Ajouter une patiente</button>
+          </div>
+        </div>
+        <div class="table-controls-advanced">
+          <div class="filters-row">
+            <label>
+              Risque:
+              <select id="risk-filter">
+                <option value="all">Tous</option>
+                <option value="élevé">🔴 Élevé</option>
+                <option value="moyen">🟠 Modéré</option>
+                <option value="faible">🟢 Faible</option>
+              </select>
+            </label>
+            <label>
+              Localité:
+              <select id="location-filter">
+                <option value="all">Toutes</option>
+              </select>
+            </label>
+            <label>
+              Semaine grossesse:
+              <select id="week-filter">
+                <option value="all">Toutes</option>
+                <option value="0-12">0-12 semaines</option>
+                <option value="13-24">13-24 semaines</option>
+                <option value="25-36">25-36 semaines</option>
+                <option value="37-42">37-42 semaines</option>
+              </select>
+            </label>
+            <label>
+              Statut CPN:
+              <select id="cpn-status-filter">
+                <option value="all">Tous</option>
+                <option value="complete">Complétées</option>
+                <option value="manque">Manquées</option>
+                <option value="planifie">Planifiées</option>
+              </select>
+            </label>
+            <label>
+              Âge:
+              <select id="age-filter">
+                <option value="all">Tous</option>
+                <option value="15-20">15-20 ans</option>
+                <option value="21-25">21-25 ans</option>
+                <option value="26-30">26-30 ans</option>
+                <option value="31-35">31-35 ans</option>
+                <option value="36-40">36-40 ans</option>
+                <option value="41+">41 ans et plus</option>
+              </select>
+            </label>
+            <label>
+              Distance:
+              <select id="distance-filter">
+                <option value="all">Toutes</option>
+                <option value="0-2">0-2 km</option>
+                <option value="2-5">2-5 km</option>
+                <option value="5-10">5-10 km</option>
+                <option value="10+">Plus de 10 km</option>
+              </select>
+            </label>
+            <label>
+              Dernière venue:
+              <select id="last-visit-filter">
+                <option value="all">Toutes</option>
+                <option value="today">Aujourd'hui</option>
+                <option value="week">Cette semaine</option>
+                <option value="month">Ce mois</option>
+                <option value="3months">3 derniers mois</option>
+                <option value="never">Jamais</option>
+              </select>
+            </label>
+            <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+              <button id="reset-filters-btn" type="button" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">🔄 Réinitialiser</button>
+              <button id="export-btn" type="button" class="btn-secondary">📊 Exporter</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table id="patient-table" role="table" aria-label="Liste des patientes suivies">
+            <thead>
+              <tr>
+                <th scope="col">Nom</th>
+                <th scope="col">Âge</th>
+                <th scope="col">Distance</th>
+                <th scope="col">Risque</th>
+                <th scope="col">Dernière venue</th>
+                <th scope="col">Prochaine CPN</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody role="rowgroup"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal pour ajouter une patiente -->
+    <div id="add-patiente-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Ajouter une nouvelle patiente</h2>
+          <button id="close-modal-btn" type="button" class="close-btn">&times;</button>
+        </div>
+        <form id="add-patiente-form">
+          <div class="form-section">
+            <h3>Informations de connexion</h3>
+            <label>
+              ID du patient <span class="required">*</span>
+              <input type="number" id="patiente-id" placeholder="Ex: 1001" min="1" required />
+              <small style="color: #6b7280; font-size: 0.875rem;">Identifiant unique de la patiente (obligatoire)</small>
+            </label>
+            <label>
+              Téléphone <span class="required">*</span>
+              <input type="tel" id="patiente-telephone" placeholder="Ex: +22370000000" required />
+            </label>
+            <label>
+              Mot de passe <span class="required">*</span>
+              <input type="password" id="patiente-password" minlength="6" placeholder="Minimum 6 caractères" required />
+            </label>
+          </div>
+
+          <div class="form-section">
+            <h3>Informations personnelles</h3>
+            <div class="form-row">
+              <label>
+                Prénom
+                <input type="text" id="patiente-prenom" />
+              </label>
+              <label>
+                Nom
+                <input type="text" id="patiente-nom" />
+              </label>
+            </div>
+            <label>
+              Âge <span class="required">*</span>
+              <input type="number" id="patiente-age" min="1" max="60" required />
+            </label>
+            <div class="form-row">
+              <label>
+                Gestité
+                <input type="number" id="patiente-gestite" min="1" value="1" />
+              </label>
+              <label>
+                Parité
+                <input type="number" id="patiente-parite" min="0" value="0" />
+              </label>
+            </div>
+            <label>
+              Niveau d'instruction
+              <select id="patiente-niveau-instruction">
+                <option value="">Sélectionner...</option>
+                <option value="aucun">Aucun</option>
+                <option value="primaire">Primaire</option>
+                <option value="secondaire">Secondaire</option>
+                <option value="superieur">Supérieur</option>
+              </select>
+            </label>
+            <label>
+              Langue préférée
+              <select id="patiente-langue">
+                <option value="fr">Français</option>
+                <option value="bambara">Bambara</option>
+                <option value="wolof">Wolof</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-section">
+            <h3>Localisation</h3>
+            <label>
+              Adresse
+              <input type="text" id="patiente-adresse" />
+            </label>
+            <label>
+              Ville
+              <input type="text" id="patiente-ville" />
+            </label>
+            <div class="form-row">
+              <label>
+                Distance au centre (km)
+                <input type="number" id="patiente-distance" step="0.1" min="0" />
+              </label>
+              <label>
+                Moyen de transport
+                <select id="patiente-transport">
+                  <option value="">Sélectionner...</option>
+                  <option value="pieds">Pieds</option>
+                  <option value="velo">Vélo</option>
+                  <option value="moto">Moto</option>
+                  <option value="voiture">Voiture</option>
+                  <option value="transport_public">Transport public</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Informations médicales</h3>
+            <label>
+              Date des dernières règles
+              <input type="date" id="patiente-dernieres-regles" />
+            </label>
+            <label>
+              Date d'accouchement prévue
+              <input type="date" id="patiente-accouchement-prevue" />
+            </label>
+            <label>
+              Antécédents médicaux
+              <textarea id="patiente-antecedents-medicaux" rows="3"></textarea>
+            </label>
+            <label>
+              Antécédents obstétricaux
+              <textarea id="patiente-antecedents-obstetricaux" rows="3"></textarea>
+            </label>
+            <label>
+              Allergies
+              <textarea id="patiente-allergies" rows="2"></textarea>
+            </label>
+          </div>
+
+          <div class="form-section">
+            <h3>Contact d'urgence</h3>
+            <label>
+              Nom du contact
+              <input type="text" id="patiente-contact-nom" />
+            </label>
+            <label>
+              Téléphone d'urgence
+              <input type="tel" id="patiente-contact-telephone" />
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="cancel-patiente-btn" class="btn-secondary">Annuler</button>
+            <button type="submit" class="btn-primary">Créer la patiente</button>
+          </div>
+          <div id="patiente-message" class="message"></div>
+        </form>
+      </div>
+    </div>
+
+    <footer role="contentinfo">
+      <small>Prototype MAMA+ – Amélioration du suivi prénatal</small>
+    </footer>
+
+    <!-- Version simplifiée - Fonctionne sans serveur backend -->
+    <script src="app-professionnel-simple.js" defer></script>
+    <!-- Version complète avec backend (décommenter si vous avez un serveur backend) -->
+    <!-- <script src="app-professionnel.js" defer></script> -->
+  </body>
+</html>
+

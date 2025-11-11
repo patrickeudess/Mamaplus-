@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MAMA+ – Mon espace patiente</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header role="banner" class="tools-header">
+      <div class="header-left">
+        <a href="index.html" style="color: #fff; text-decoration: none; font-size: 1.5rem; margin-right: 1rem;" title="Retour à l'accueil">🏠</a>
+        <span class="header-icon">👩</span>
+      <h1>MAMA+ – Mon espace</h1>
+      </div>
+      <div id="auth-section" role="navigation">
+        <div id="user-info" class="hidden" aria-live="polite">
+          <span id="user-name" aria-label="Nom de l'utilisateur"></span>
+          <button id="logout-button" type="button" aria-label="Se déconnecter">Déconnexion</button>
+        </div>
+      </div>
+    </header>
+
+    <main role="main">
+      <!-- Formulaire d'inscription/complétion de profil -->
+      <section class="card registration-form-card hidden" id="registration-form-card">
+        <div class="card-header-with-icon">
+          <span class="card-icon">📝</span>
+          <h2>Bienvenue sur MAMA+</h2>
+        </div>
+        <div class="registration-content">
+          <p class="registration-intro">Pour commencer, veuillez remplir vos informations personnelles. Ces données permettront de générer votre tableau de bord personnalisé.</p>
+          <form id="patiente-registration-form" class="registration-form">
+            <div class="form-section">
+              <h3>Informations personnelles</h3>
+              <div class="form-row">
+                <label>
+                  Prénom <span class="required">*</span>
+                  <input type="text" id="reg-prenom" placeholder="Votre prénom" required />
+                </label>
+                <label>
+                  Nom <span class="required">*</span>
+                  <input type="text" id="reg-nom" placeholder="Votre nom" required />
+                </label>
+              </div>
+              <label>
+                Âge <span class="required">*</span>
+                <input type="number" id="reg-age" min="15" max="50" placeholder="Votre âge" required />
+              </label>
+              <div class="form-row">
+                <label>
+                  Gestité
+                  <input type="number" id="reg-gestite" min="1" value="1" placeholder="Nombre de grossesses" />
+                </label>
+                <label>
+                  Parité
+                  <input type="number" id="reg-parite" min="0" value="0" placeholder="Nombre d'enfants nés" />
+                </label>
+              </div>
+              <label>
+                Niveau d'instruction
+                <select id="reg-niveau-instruction">
+                  <option value="">Sélectionner...</option>
+                  <option value="aucun">Aucun</option>
+                  <option value="primaire">Primaire</option>
+                  <option value="secondaire">Secondaire</option>
+                  <option value="superieur">Supérieur</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="form-section">
+              <h3>Informations de grossesse</h3>
+              <label>
+                Date des dernières règles <span class="required">*</span>
+                <input type="date" id="reg-dernieres-regles" required />
+              </label>
+              <label>
+                Date d'accouchement prévue
+                <input type="date" id="reg-accouchement-prevue" />
+                <small>Si vous ne connaissez pas cette date, elle sera calculée automatiquement</small>
+              </label>
+            </div>
+
+            <div class="form-section">
+              <h3>Localisation</h3>
+              <label>
+                Ville
+                <input type="text" id="reg-ville" placeholder="Ex: Bamako" />
+              </label>
+              <label>
+                Adresse
+                <input type="text" id="reg-adresse" placeholder="Quartier, rue..." />
+              </label>
+              <div class="form-row">
+                <label>
+                  Distance au centre de santé (km)
+                  <input type="number" id="reg-distance" step="0.1" min="0" placeholder="Ex: 2.5" />
+                </label>
+                <label>
+                  Moyen de transport
+                  <select id="reg-transport">
+                    <option value="">Sélectionner...</option>
+                    <option value="pieds">À pied</option>
+                    <option value="velo">À vélo</option>
+                    <option value="moto">En moto</option>
+                    <option value="voiture">En voiture</option>
+                    <option value="transport_public">Transport public</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3>Informations médicales (optionnel)</h3>
+              <label>
+                Antécédents médicaux
+                <textarea id="reg-antecedents-medicaux" rows="3" placeholder="Maladies chroniques, allergies, etc."></textarea>
+              </label>
+              <label>
+                Antécédents obstétricaux
+                <textarea id="reg-antecedents-obstetricaux" rows="3" placeholder="Complications lors de grossesses précédentes, etc."></textarea>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Créer mon profil</button>
+            </div>
+            <div id="registration-message" class="message"></div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Profil rapide -->
+      <section class="card profile-card" id="profile-card" aria-labelledby="profile-name">
+        <div class="profile-header">
+          <div class="profile-avatar" aria-hidden="true">👩</div>
+          <div class="profile-info">
+            <h2 id="profile-name">Chargement...</h2>
+            <div class="profile-details">
+              <span id="profile-age"></span>
+              <span class="separator">•</span>
+              <span id="profile-dossier"></span>
+              <span class="separator">•</span>
+              <span id="profile-week"></span>
+              <span class="separator" id="distance-separator" style="display: none;">•</span>
+              <span id="profile-distance" style="display: none;"></span>
+              <span class="separator" id="transport-separator" style="display: none;">•</span>
+              <span id="profile-transport" style="display: none;"></span>
+            </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- Section Rappels -->
+      <section class="card reminders-card" id="reminders-card" style="margin-bottom: 2rem;">
+        <div class="card-header-with-icon">
+          <span class="card-icon">📅</span>
+          <h2>Mes prochains rendez-vous</h2>
+        </div>
+        <div id="reminders-content" class="loading-state">
+          <div class="spinner"></div>
+          <p>Chargement...</p>
+        </div>
+      </section>
+
+      <!-- Grille d'outils -->
+      <section class="tools-grid-section">
+        <div class="tools-grid">
+          <!-- Mon dossier médical -->
+          <a href="dossier-medical.html" class="tool-card" id="tool-dossier">
+            <div class="tool-icon-wrapper">
+              <div class="tool-icon-circle" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <span class="tool-icon">📋</span>
+              </div>
+            </div>
+            <div class="tool-content">
+              <h3 class="tool-title">Mon dossier médical</h3>
+              <p class="tool-subtitle">Consulter mon dossier complet</p>
+            </div>
+            <div class="tool-audio-icon">🔊</div>
+          </a>
+
+          <!-- Chatbot IA -->
+          <a href="chatbot.html" class="tool-card" id="tool-chatbot">
+            <div class="tool-icon-wrapper">
+              <div class="tool-icon-circle" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                <span class="tool-icon">🤖</span>
+              </div>
+            </div>
+            <div class="tool-content">
+              <h3 class="tool-title">Aide intelligent</h3>
+              <p class="tool-subtitle">Réponses à vos questions</p>
+            </div>
+            <div class="tool-audio-icon">🔊</div>
+          </a>
+
+          <!-- Conseils -->
+          <a href="conseils.html" class="tool-card" id="tool-conseils">
+            <div class="tool-icon-wrapper">
+              <div class="tool-icon-circle" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">
+                <span class="tool-icon">💡</span>
+              </div>
+            </div>
+            <div class="tool-content">
+              <h3 class="tool-title">Conseils</h3>
+              <p class="tool-subtitle">Nutrition et signes d'alerte</p>
+            </div>
+            <div class="tool-audio-icon">🔊</div>
+          </a>
+
+          <!-- Urgence -->
+          <a href="tel:+22370000000" class="tool-card" id="tool-urgence">
+            <div class="tool-icon-wrapper">
+              <div class="tool-icon-circle" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);">
+                <span class="tool-icon">📞</span>
+              </div>
+            </div>
+            <div class="tool-content">
+              <h3 class="tool-title">Urgence</h3>
+              <p class="tool-subtitle">Appeler maintenant</p>
+            </div>
+            <div class="tool-audio-icon">🔊</div>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer role="contentinfo">
+      <small>Prototype MAMA+ – Amélioration du suivi prénatal</small>
+    </footer>
+
+    <script src="app-patriente.js" defer></script>
+  </body>
+</html>

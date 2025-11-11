@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MAMA+ – Géovisualisation</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header role="banner" class="tools-header">
+      <div class="header-left">
+        <a href="index-professionnel.html" style="color: #fff; text-decoration: none; font-size: 1.5rem; margin-right: 1rem;">←</a>
+        <span class="header-icon">📍</span>
+        <h1>MAMA+ – Géovisualisation</h1>
+      </div>
+      <div id="auth-section" role="navigation">
+        <div id="user-info" class="hidden" aria-live="polite">
+          <span id="user-name" aria-label="Nom de l'utilisateur"></span>
+          <button id="logout-button" type="button" aria-label="Se déconnecter">Déconnexion</button>
+        </div>
+      </div>
+    </header>
+
+    <main role="main" style="padding: 2rem;">
+      <section class="card" id="map-card">
+        <div class="card-header-with-icon">
+          <span class="card-icon">📍</span>
+          <h2>Géovisualisation des patientes</h2>
+        </div>
+        <div id="map-content">
+          <div class="map-placeholder">
+            <p>🗺️ Carte interactive</p>
+            <small>La fonctionnalité de carte sera disponible prochainement</small>
+            <div id="map-clusters" class="map-clusters-preview"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer role="contentinfo">
+      <small>Prototype MAMA+ – Amélioration du suivi prénatal</small>
+    </footer>
+
+    <script src="app-professionnel.js" defer></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.loadDashboardData) {
+          window.loadDashboardData();
+        }
+      });
+    </script>
+  </body>
+</html>
+

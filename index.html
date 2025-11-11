@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MAMA+ – Accueil</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .welcome-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      .welcome-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 3rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+      }
+      .welcome-card h1 {
+        color: #1f2933;
+        margin-bottom: 0.5rem;
+      }
+      .welcome-card p {
+        color: #6b7280;
+        margin-bottom: 2rem;
+      }
+      .user-type-selection {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+      @media screen and (max-width: 768px) {
+        .user-type-selection {
+          grid-template-columns: 1fr;
+        }
+        .welcome-card {
+          padding: 2rem 1.5rem;
+        }
+        .welcome-card h1 {
+          font-size: 2rem;
+        }
+      }
+      .user-type-card {
+        padding: 2rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #f9fafb;
+        user-select: none;
+        -webkit-user-select: none;
+        outline: none;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+      }
+      .user-type-card:focus {
+        outline: 2px solid #2563eb;
+        outline-offset: 2px;
+      }
+      .user-type-card:hover {
+        border-color: #2563eb;
+        background: #eff6ff;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+      .user-type-card:active {
+        transform: translateY(0);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+      }
+      .user-type-card.selected {
+        border-color: #2563eb;
+        background: #dbeafe;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+      .user-type-card h3 {
+        margin: 0 0 0.5rem 0;
+        color: #1f2933;
+      }
+      .user-type-card p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #6b7280;
+      }
+      .icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+      .login-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e5e7eb;
+      }
+      .login-section.hidden {
+        display: none;
+      }
+      .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .login-form input {
+        padding: 0.75rem;
+        border: 1px solid #d0d7de;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+      }
+      .login-form button {
+        padding: 0.75rem;
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .login-form button:hover {
+        background-color: #1d4ed8;
+      }
+      .error-message {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+      }
+      .success-message {
+        color: #10b981;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+      }
+      .toggle-form {
+        margin-top: 1rem;
+        text-align: center;
+      }
+      .toggle-form button {
+        background: none;
+        border: none;
+        color: #2563eb;
+        cursor: pointer;
+        text-decoration: underline;
+        font-size: 0.9rem;
+        padding: 0.5rem;
+      }
+      .toggle-form button:hover {
+        color: #1d4ed8;
+      }
+      .register-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e5e7eb;
+      }
+      .register-section.hidden {
+        display: none;
+      }
+      .register-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .register-form input {
+        padding: 0.75rem;
+        border: 1px solid #d0d7de;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+      }
+      .register-form button {
+        padding: 0.75rem;
+        background-color: #10b981;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .register-form button:hover {
+        background-color: #059669;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      .server-status {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .server-status.checking {
+        background-color: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fbbf24;
+      }
+      .server-status.connected {
+        background-color: #d1fae5;
+        color: #065f46;
+        border: 1px solid #10b981;
+      }
+      .server-status.disconnected {
+        background-color: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #ef4444;
+      }
+      .server-status-icon {
+        font-size: 1.2rem;
+      }
+      .help-box {
+        background-color: #eff6ff;
+        border: 1px solid #3b82f6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-top: 1rem;
+        font-size: 0.875rem;
+      }
+      .help-box h4 {
+        margin: 0 0 0.5rem 0;
+        color: #1e40af;
+      }
+      .help-box ul {
+        margin: 0.5rem 0;
+        padding-left: 1.5rem;
+      }
+      .help-box code {
+        background-color: #dbeafe;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.25rem;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="welcome-container">
+      <div class="welcome-card">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">MAMA+</h1>
+          <p style="font-size: 1.1rem; color: #6b7280; margin-bottom: 0.5rem;">Bienvenue sur la plateforme de suivi des consultations prénatales</p>
+          <p style="font-size: 0.95rem; color: #9ca3af; margin: 0;">Choisissez votre profil pour accéder à votre espace</p>
+        </div>
+        
+        <div class="user-type-selection">
+          <a href="index-patriente.html" class="user-type-card" id="patiente-card" data-type="patiente" role="button" tabindex="0" aria-label="Accéder à l'interface patiente">
+            <div class="icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">👩</div>
+            <h3>Patiente</h3>
+            <p>Consultez votre dossier médical, vos rendez-vous CPN et accédez à des conseils personnalisés</p>
+            <div style="margin-top: 1rem; font-size: 0.85rem; color: #2563eb; font-weight: 600;">→ Accéder à mon espace</div>
+          </a>
+          
+          <a href="index-professionnel.html" class="user-type-card" id="professionnel-card" data-type="professionnel" role="button" tabindex="0" aria-label="Accéder à l'interface professionnel">
+            <div class="icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">👨‍⚕️</div>
+            <h3>Professionnel de santé</h3>
+            <p>Tableau de bord, gestion des patientes, suivi des consultations et statistiques</p>
+            <div style="margin-top: 1rem; font-size: 0.85rem; color: #2563eb; font-weight: 600;">→ Accéder au tableau de bord</div>
+          </a>
+        </div>
+
+        <div class="login-section hidden" id="login-section">
+          <h3 id="login-title">Connexion</h3>
+          <form id="login-form" class="login-form">
+            <input type="tel" id="login-telephone" placeholder="Numéro de téléphone" required />
+            <input type="password" id="login-password" placeholder="Mot de passe" required />
+            <button type="submit">Se connecter</button>
+            <div id="error-message" class="error-message"></div>
+            <div class="toggle-form">
+              <p>Pas encore de compte ? <button type="button" id="show-register">Créer un compte</button></p>
+            </div>
+          </form>
+        </div>
+
+        <div class="register-section hidden" id="register-section">
+          <h3 id="register-title">Créer un compte</h3>
+          <div id="server-status" class="server-status checking hidden">
+            <span class="server-status-icon">⏳</span>
+            <span id="server-status-text">Vérification du serveur...</span>
+          </div>
+          <form id="register-form" class="register-form">
+            <div class="form-row">
+              <input type="text" id="register-prenom" placeholder="Prénom" />
+              <input type="text" id="register-nom" placeholder="Nom" />
+            </div>
+            <input type="tel" id="register-telephone" placeholder="Numéro de téléphone *" required />
+            <input type="email" id="register-email" placeholder="Email (optionnel)" />
+            <input type="password" id="register-password" placeholder="Mot de passe (min. 6 caractères) *" required minlength="6" />
+            <input type="password" id="register-password-confirm" placeholder="Confirmer le mot de passe *" required />
+            <div id="register-error-message" class="error-message"></div>
+            <div id="register-success-message" class="success-message"></div>
+            <button type="submit" id="register-submit-btn">Créer mon compte</button>
+            <div id="server-help-box" class="help-box hidden">
+              <h4>💡 Le serveur backend n'est pas accessible</h4>
+              <p>Pour démarrer le serveur :</p>
+              <ol>
+                <li>Ouvrez un terminal PowerShell</li>
+                <li>Allez dans le dossier du projet : <code>cd "C:\Users\DELL LATITUDE\Desktop\Projet perso\mama+"</code></li>
+                <li>Exécutez : <code>.\start-server.ps1</code></li>
+                <li>Ou manuellement :
+                  <ul>
+                    <li><code>.\venv\Scripts\Activate.ps1</code></li>
+                    <li><code>cd backend</code></li>
+                    <li><code>python -m uvicorn main:app --reload</code></li>
+                  </ul>
+                </li>
+              </ol>
+              <p>Une fois le serveur démarré, rafraîchissez cette page.</p>
+            </div>
+            <div class="toggle-form">
+              <p>Déjà un compte ? <button type="button" id="show-login">Se connecter</button></p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="app-home.js" defer></script>
+  </body>
+</html>

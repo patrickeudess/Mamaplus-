@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MAMA+ – Mon dossier médical complet</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header role="banner">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <a href="index-patriente.html" style="color: #fff; text-decoration: none; font-size: 1.5rem;">←</a>
+        <h1 style="margin: 0;">MAMA+ – Mon dossier médical complet</h1>
+      </div>
+      <div id="auth-section" role="navigation">
+        <div id="user-info" class="hidden" aria-live="polite">
+          <span id="user-name" aria-label="Nom de l'utilisateur"></span>
+          <button id="logout-button" type="button" aria-label="Se déconnecter">Déconnexion</button>
+        </div>
+      </div>
+    </header>
+
+    <main role="main">
+      <!-- Profil rapide -->
+      <section class="card profile-card" id="profile-card" aria-labelledby="profile-name">
+        <div class="profile-header">
+          <div class="profile-avatar" aria-hidden="true">👩</div>
+          <div class="profile-info">
+            <h2 id="profile-name">Chargement...</h2>
+            <div class="profile-details">
+              <span id="profile-age"></span>
+              <span class="separator">•</span>
+              <span id="profile-dossier"></span>
+              <span class="separator">•</span>
+              <span id="profile-week"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dossier médical complet -->
+      <section class="card dossier-card-enhanced" id="dossier-card">
+        <div class="card-header-with-icon">
+          <span class="card-icon">📋</span>
+          <h2>Mon dossier médical complet</h2>
+        </div>
+        <div id="dossier-content" class="loading-state">
+          <div class="spinner"></div>
+          <p>Chargement...</p>
+        </div>
+      </section>
+    </main>
+
+    <footer role="contentinfo">
+      <small>Prototype MAMA+ – Amélioration du suivi prénatal</small>
+    </footer>
+
+    <script src="app-dossier.js" defer></script>
+  </body>
+</html>
+

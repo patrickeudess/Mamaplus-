@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MAMA+ Tableau de bord - Professionnel</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header role="banner" class="tools-header">
+      <div class="header-left">
+        <a href="index.html" style="color: #fff; text-decoration: none; font-size: 1.5rem; margin-right: 1rem;" title="Retour à l'accueil">🏠</a>
+        <span class="header-icon">👨‍⚕️</span>
+      <h1>MAMA+ – Tableau de bord professionnel</h1>
+      </div>
+      <div id="auth-section" role="navigation">
+        <div id="user-info" class="hidden" aria-live="polite">
+          <span id="user-name" aria-label="Nom de l'utilisateur"></span>
+          <button id="logout-button" type="button" aria-label="Se déconnecter">Déconnexion</button>
+        </div>
+      </div>
+    </header>
+
+    <main role="main">
+      <!-- Formulaire de profil professionnel -->
+      <section class="card registration-form-card hidden" id="professional-profile-form-card">
+        <div class="card-header-with-icon">
+          <span class="card-icon">👨‍⚕️</span>
+          <h2>Créer votre profil professionnel</h2>
+        </div>
+        <div class="registration-content">
+          <p class="registration-intro">Pour commencer, veuillez remplir vos informations professionnelles. Ces données permettront de personnaliser votre tableau de bord.</p>
+          <form id="professional-profile-form" class="registration-form">
+            <div class="form-section">
+              <h3>Informations personnelles</h3>
+              <div class="form-row">
+                <label>
+                  Prénom <span class="required">*</span>
+                  <input type="text" id="prof-prenom" placeholder="Votre prénom" required />
+                </label>
+                <label>
+                  Nom <span class="required">*</span>
+                  <input type="text" id="prof-nom" placeholder="Votre nom" required />
+                </label>
+              </div>
+              <label>
+                Téléphone <span class="required">*</span>
+                <input type="tel" id="prof-telephone" placeholder="Ex: +22370000000" required />
+              </label>
+              <label>
+                Email
+                <input type="email" id="prof-email" placeholder="votre.email@example.com" />
+              </label>
+            </div>
+
+            <div class="form-section">
+              <h3>Informations professionnelles</h3>
+              <label>
+                Profession <span class="required">*</span>
+                <select id="prof-profession" required>
+                  <option value="">Sélectionner...</option>
+                  <option value="sage_femme">Sage-femme</option>
+                  <option value="medecin">Médecin</option>
+                  <option value="superviseur">Superviseur</option>
+                  <option value="infirmier">Infirmier/Infirmière</option>
+                </select>
+              </label>
+              <label>
+                Centre de santé <span class="required">*</span>
+                <input type="text" id="prof-centre" placeholder="Nom du centre de santé" required />
+              </label>
+              <label>
+                Adresse du centre
+                <input type="text" id="prof-adresse-centre" placeholder="Adresse complète" />
+              </label>
+              <label>
+                Ville
+                <input type="text" id="prof-ville" placeholder="Ex: Bamako" />
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Créer mon profil</button>
+            </div>
+            <div id="professional-profile-message" class="message"></div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Indicateurs de suivi -->
+      <section class="dashboard-stats-section">
+        <div class="card stats-card">
+          <div class="card-header-with-icon">
+            <span class="card-icon">📊</span>
+            <h2>Indicateurs de suivi</h2>
+          </div>
+          <div id="dashboard-stats-content" class="stats-grid">
+            <div class="loading-state" style="text-align: center; padding: 2rem; color: #6b7280;">
+              <p>Chargement des indicateurs...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Grille d'outils professionnel -->
+      <section class="tools-grid-section">
+        <div class="tools-grid">
+          <!-- Mes patientes -->
+          <a href="mes-patientes.html" class="tool-card" id="tool-patientes">
+            <div class="tool-icon-wrapper">
+              <div class="tool-icon-circle" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <span class="tool-icon">👥</span>
+              </div>
+            </div>
+            <div class="tool-content">
+              <h3 class="tool-title">Mes patientes</h3>
+              <p class="tool-subtitle">Liste des patientes suivies</p>
+            </div>
+            <div class="tool-audio-icon">🔊</div>
+          </a>
+
+          <!-- Prédiction de risque -->
+          <a href="estimation.html" class="tool-card" id="tool-prediction">
+            <div class="tool-icon-wrapper">
+              <div class="tool-icon-circle" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <span class="tool-icon">📊</span>
+              </div>
+            </div>
+            <div class="tool-content">
+              <h3 class="tool-title">Estimation</h3>
+              <p class="tool-subtitle">Estimer les risques et prédictions</p>
+              <span class="tool-badge">Nouveau</span>
+            </div>
+            <div class="tool-audio-icon">🔊</div>
+          </a>
+
+          <!-- Alertes -->
+          <a href="alertes.html" class="tool-card" id="tool-alerts">
+            <div class="tool-icon-wrapper">
+              <div class="tool-icon-circle" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                <span class="tool-icon">⚠️</span>
+              </div>
+            </div>
+            <div class="tool-content">
+              <h3 class="tool-title">Alertes</h3>
+              <p class="tool-subtitle">Cas prioritaires à suivre</p>
+            </div>
+            <div class="tool-audio-icon">🔊</div>
+          </a>
+
+          <!-- Géovisualisation -->
+          <a href="geovisualisation.html" class="tool-card" id="tool-map">
+            <div class="tool-icon-wrapper">
+              <div class="tool-icon-circle" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">
+                <span class="tool-icon">📍</span>
+              </div>
+            </div>
+            <div class="tool-content">
+              <h3 class="tool-title">Géovisualisation</h3>
+              <p class="tool-subtitle">Carte des patientes</p>
+            </div>
+            <div class="tool-audio-icon">🔊</div>
+          </a>
+
+          <!-- Performance -->
+          <a href="statistiques.html#performance" class="tool-card" id="tool-performance">
+            <div class="tool-icon-wrapper">
+              <div class="tool-icon-circle" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                <span class="tool-icon">📊</span>
+              </div>
+            </div>
+            <div class="tool-content">
+              <h3 class="tool-title">Performance</h3>
+              <p class="tool-subtitle">Statistiques de suivi</p>
+            </div>
+            <div class="tool-audio-icon">🔊</div>
+          </a>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Modal pour ajouter une patiente -->
+    <div id="add-patiente-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Ajouter une nouvelle patiente</h2>
+          <button id="close-modal-btn" type="button" class="close-btn">&times;</button>
+        </div>
+        <form id="add-patiente-form">
+          <div class="form-section">
+            <h3>Informations de connexion</h3>
+            <label>
+              ID du patient <span class="required">*</span>
+              <input type="number" id="patiente-id" placeholder="Ex: 1001" min="1" required />
+              <small style="color: #6b7280; font-size: 0.875rem;">Identifiant unique de la patiente (obligatoire)</small>
+            </label>
+            <label>
+              Téléphone <span class="required">*</span>
+              <input type="tel" id="patiente-telephone" placeholder="Ex: +22370000000" required />
+            </label>
+            <label>
+              Mot de passe <span class="required">*</span>
+              <input type="password" id="patiente-password" minlength="6" placeholder="Minimum 6 caractères" required />
+            </label>
+          </div>
+
+          <div class="form-section">
+            <h3>Informations personnelles</h3>
+            <div class="form-row">
+            <label>
+                Prénom
+                <input type="text" id="patiente-prenom" />
+            </label>
+            <label>
+                Nom
+                <input type="text" id="patiente-nom" />
+            </label>
+            </div>
+            <label>
+              Âge <span class="required">*</span>
+              <input type="number" id="patiente-age" min="1" max="60" required />
+            </label>
+            <div class="form-row">
+            <label>
+                Gestité
+                <input type="number" id="patiente-gestite" min="1" value="1" />
+            </label>
+            <label>
+                Parité
+                <input type="number" id="patiente-parite" min="0" value="0" />
+            </label>
+        </div>
+          <label>
+              Niveau d'instruction
+              <select id="patiente-niveau-instruction">
+                <option value="">Sélectionner...</option>
+                <option value="aucun">Aucun</option>
+                <option value="primaire">Primaire</option>
+                <option value="secondaire">Secondaire</option>
+                <option value="superieur">Supérieur</option>
+              </select>
+          </label>
+          <label>
+              Langue préférée
+              <select id="patiente-langue">
+              <option value="fr">Français</option>
+              <option value="bambara">Bambara</option>
+              <option value="wolof">Wolof</option>
+            </select>
+          </label>
+          </div>
+
+          <div class="form-section">
+            <h3>Localisation</h3>
+            <label>
+              Adresse
+              <input type="text" id="patiente-adresse" />
+            </label>
+            <label>
+              Ville
+              <input type="text" id="patiente-ville" />
+            </label>
+            <div class="form-row">
+              <label>
+                Distance au centre (km)
+                <input type="number" id="patiente-distance" step="0.1" min="0" />
+              </label>
+              <label>
+                Moyen de transport
+                <select id="patiente-transport">
+                  <option value="">Sélectionner...</option>
+                  <option value="pieds">Pieds</option>
+                  <option value="velo">Vélo</option>
+                  <option value="moto">Moto</option>
+                  <option value="voiture">Voiture</option>
+                  <option value="transport_public">Transport public</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Informations médicales</h3>
+            <label>
+              Date des dernières règles
+              <input type="date" id="patiente-dernieres-regles" />
+            </label>
+            <label>
+              Date d'accouchement prévue
+              <input type="date" id="patiente-accouchement-prevue" />
+            </label>
+            <label>
+              Antécédents médicaux
+              <textarea id="patiente-antecedents-medicaux" rows="3"></textarea>
+            </label>
+            <label>
+              Antécédents obstétricaux
+              <textarea id="patiente-antecedents-obstetricaux" rows="3"></textarea>
+            </label>
+            <label>
+              Allergies
+              <textarea id="patiente-allergies" rows="2"></textarea>
+            </label>
+          </div>
+
+          <div class="form-section">
+            <h3>Contact d'urgence</h3>
+            <label>
+              Nom du contact
+              <input type="text" id="patiente-contact-nom" />
+          </label>
+          <label>
+              Téléphone d'urgence
+              <input type="tel" id="patiente-contact-telephone" />
+          </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="cancel-patiente-btn" class="btn-secondary">Annuler</button>
+            <button type="submit" class="btn-primary">Créer la patiente</button>
+          </div>
+          <div id="patiente-message" class="message"></div>
+        </form>
+      </div>
+    </div>
+
+    <footer role="contentinfo">
+      <small>Prototype MAMA+ – Amélioration du suivi prénatal</small>
+    </footer>
+
+    <!-- Version simplifiée - Fonctionne sans serveur backend -->
+    <script src="app-professionnel-simple.js" defer></script>
+    <!-- Version complète avec backend (décommenter si vous avez un serveur backend) -->
+    <!-- <script src="app-professionnel.js" defer></script> -->
+  </body>
+</html>
