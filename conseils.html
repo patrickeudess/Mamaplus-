@@ -2,9 +2,11 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <title>MAMA+ – Sensibilisation et Informations</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles-icons.css" />
+    <link rel="stylesheet" href="styles-mobile-nav.css" />
   </head>
   <body>
     <header role="banner" class="tools-header">
@@ -35,18 +37,18 @@
 
       <!-- Navigation par onglets -->
       <section class="card" style="padding: 0; margin-bottom: 2rem;">
-        <div class="tabs-container-enhanced">
-          <button class="tab-btn-enhanced active" data-tab="suivi">📅 Suivi Prénatal</button>
-          <button class="tab-btn-enhanced" data-tab="nutrition">🍎 Nutrition</button>
-          <button class="tab-btn-enhanced" data-tab="bienetre">💪 Bien-être</button>
-          <button class="tab-btn-enhanced" data-tab="signes">⚠️ Signes d'alerte</button>
-          <button class="tab-btn-enhanced" data-tab="preparation">👶 Préparation</button>
-          <button class="tab-btn-enhanced" data-tab="faq">❓ Questions fréquentes</button>
+        <div class="tabs-container-enhanced" role="tablist" aria-label="Navigation entre les sections de conseils">
+          <button class="tab-btn-enhanced active" data-tab="suivi" role="tab" aria-selected="true" aria-controls="suivi-tab" tabindex="0">📅 Suivi Prénatal</button>
+          <button class="tab-btn-enhanced" data-tab="nutrition" role="tab" aria-selected="false" aria-controls="nutrition-tab" tabindex="-1">🍎 Nutrition</button>
+          <button class="tab-btn-enhanced" data-tab="bienetre" role="tab" aria-selected="false" aria-controls="bienetre-tab" tabindex="-1">💪 Bien-être</button>
+          <button class="tab-btn-enhanced" data-tab="signes" role="tab" aria-selected="false" aria-controls="signes-tab" tabindex="-1">⚠️ Signes d'alerte</button>
+          <button class="tab-btn-enhanced" data-tab="preparation" role="tab" aria-selected="false" aria-controls="preparation-tab" tabindex="-1">👶 Préparation</button>
+          <button class="tab-btn-enhanced" data-tab="faq" role="tab" aria-selected="false" aria-controls="faq-tab" tabindex="-1">❓ Questions fréquentes</button>
         </div>
       </section>
 
       <!-- Contenu Suivi Prénatal -->
-      <section id="suivi-tab" class="tab-content active">
+      <section id="suivi-tab" class="tab-content active" role="tabpanel" aria-labelledby="suivi-tab" aria-hidden="false">
         <div class="card">
           <div class="card-header-with-icon">
             <span class="card-icon">📅</span>
@@ -141,7 +143,7 @@
       </section>
 
       <!-- Contenu Nutrition -->
-      <section id="nutrition-tab" class="tab-content">
+      <section id="nutrition-tab" class="tab-content" role="tabpanel" aria-labelledby="nutrition-tab" aria-hidden="true">
         <div class="card">
           <div class="card-header-with-icon">
             <span class="card-icon">🍎</span>
@@ -252,7 +254,7 @@
       </section>
 
       <!-- Contenu Bien-être -->
-      <section id="bienetre-tab" class="tab-content">
+      <section id="bienetre-tab" class="tab-content" role="tabpanel" aria-labelledby="bienetre-tab" aria-hidden="true">
         <div class="card">
           <div class="card-header-with-icon">
             <span class="card-icon">💪</span>
@@ -317,7 +319,7 @@
       </section>
 
       <!-- Contenu Signes d'alerte -->
-      <section id="signes-tab" class="tab-content">
+      <section id="signes-tab" class="tab-content" role="tabpanel" aria-labelledby="signes-tab" aria-hidden="true">
         <div class="card">
           <div class="card-header-with-icon">
             <span class="card-icon">⚠️</span>
@@ -404,7 +406,7 @@
       </section>
 
       <!-- Contenu Préparation -->
-      <section id="preparation-tab" class="tab-content">
+      <section id="preparation-tab" class="tab-content" role="tabpanel" aria-labelledby="preparation-tab" aria-hidden="true">
         <div class="card">
           <div class="card-header-with-icon">
             <span class="card-icon">👶</span>
@@ -475,7 +477,7 @@
       </section>
 
       <!-- Contenu FAQ -->
-      <section id="faq-tab" class="tab-content">
+      <section id="faq-tab" class="tab-content" role="tabpanel" aria-labelledby="faq-tab" aria-hidden="true">
         <div class="card">
           <div class="card-header-with-icon">
             <span class="card-icon">❓</span>
@@ -562,6 +564,9 @@
       <small>Prototype MAMA+ – Amélioration du suivi prénatal</small>
     </footer>
 
+    <!-- Navigation mobile -->
+    <script src="utils/icons.js"></script>
+    <script src="utils/mobile-nav.js" defer></script>
     <script src="app-conseils.js" defer></script>
   </body>
 </html>

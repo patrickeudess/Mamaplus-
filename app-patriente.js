@@ -192,13 +192,13 @@ async function fetchCurrentUser() {
   // userName.textContent = `${currentUser.prenom || ""} ${currentUser.nom || ""}`.trim() || currentUser.telephone;
   // userInfo.classList.remove("hidden");
   
-  // Mode développement
-  if (userInfo) {
-  userInfo.classList.remove("hidden");
-    if (userName) {
-      userName.textContent = "Mode Développement";
-    }
-  }
+  // Mode développement - section masquée
+  // if (userInfo) {
+  //   userInfo.classList.remove("hidden");
+  //   if (userName) {
+  //     userName.textContent = "Mode Développement";
+  //   }
+  // }
   
   // Récupérer les données de la patiente via l'endpoint spécifique
   // try {
@@ -1121,12 +1121,7 @@ async function handleRegistrationSubmit(event) {
 async function bootstrap() {
   try {
     // Mode sans authentification - accès direct
-    if (userInfo) {
-      userInfo.classList.remove("hidden");
-      if (userName) {
-        userName.textContent = "Mode Développement";
-      }
-    }
+    // Section user-info masquée - Mode développement supprimé
     
     // Vérifier si les données de la patiente existent
     const savedData = loadSavedPatienteData();

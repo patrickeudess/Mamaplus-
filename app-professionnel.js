@@ -122,13 +122,13 @@ async function fetchCurrentUser() {
   // userName.textContent = `${currentUser.prenom || ""} ${currentUser.nom || ""}`.trim() || currentUser.telephone;
   // userInfo.classList.remove("hidden");
   
-  // Mode développement
-  if (userInfo) {
-  userInfo.classList.remove("hidden");
-    if (userName) {
-      userName.textContent = "Mode Développement";
-    }
-  }
+  // Mode développement - section masquée
+  // if (userInfo) {
+  //   userInfo.classList.remove("hidden");
+  //   if (userName) {
+  //     userName.textContent = "Mode Développement";
+  //   }
+  // }
 }
 
 function calculateAttendanceRate(patientes) {
@@ -1722,9 +1722,8 @@ async function bootstrap() {
         const profile = loadProfessionalProfile();
         if (profile) {
           userName.textContent = `${profile.prenom} ${profile.nom}`;
-        } else {
-          userName.textContent = "Mode Développement";
         }
+        // Mode développement supprimé
       }
     }
     

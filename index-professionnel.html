@@ -2,9 +2,11 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <title>MAMA+ Tableau de bord - Professionnel</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles-icons.css" />
+    <link rel="stylesheet" href="styles-mobile-nav.css" />
   </head>
   <body>
     <header role="banner" class="tools-header">
@@ -25,7 +27,7 @@
       <!-- Formulaire de profil professionnel -->
       <section class="card registration-form-card hidden" id="professional-profile-form-card">
         <div class="card-header-with-icon">
-          <span class="card-icon">👨‍⚕️</span>
+          <span class="card-icon" id="card-icon-professional"></span>
           <h2>Créer votre profil professionnel</h2>
         </div>
         <div class="registration-content">
@@ -42,12 +44,12 @@
                   Nom <span class="required">*</span>
                   <input type="text" id="prof-nom" placeholder="Votre nom" required />
                 </label>
-              </div>
-              <label>
+        </div>
+            <label>
                 Téléphone <span class="required">*</span>
                 <input type="tel" id="prof-telephone" placeholder="Ex: +22370000000" required />
-              </label>
-              <label>
+            </label>
+            <label>
                 Email
                 <input type="email" id="prof-email" placeholder="votre.email@example.com" />
               </label>
@@ -64,24 +66,24 @@
                   <option value="superviseur">Superviseur</option>
                   <option value="infirmier">Infirmier/Infirmière</option>
                 </select>
-              </label>
-              <label>
+            </label>
+            <label>
                 Centre de santé <span class="required">*</span>
                 <input type="text" id="prof-centre" placeholder="Nom du centre de santé" required />
-              </label>
-              <label>
+            </label>
+            <label>
                 Adresse du centre
                 <input type="text" id="prof-adresse-centre" placeholder="Adresse complète" />
-              </label>
-              <label>
+            </label>
+            <label>
                 Ville
                 <input type="text" id="prof-ville" placeholder="Ex: Bamako" />
-              </label>
-            </div>
+            </label>
+        </div>
 
             <div class="form-actions">
               <button type="submit" class="btn-primary">Créer mon profil</button>
-            </div>
+              </div>
             <div id="professional-profile-message" class="message"></div>
           </form>
         </div>
@@ -91,7 +93,7 @@
       <section class="dashboard-stats-section">
         <div class="card stats-card">
           <div class="card-header-with-icon">
-            <span class="card-icon">📊</span>
+            <span class="card-icon" id="card-icon-stats"></span>
             <h2>Indicateurs de suivi</h2>
           </div>
           <div id="dashboard-stats-content" class="stats-grid">
@@ -329,6 +331,37 @@
       <small>Prototype MAMA+ – Amélioration du suivi prénatal</small>
     </footer>
 
+    <!-- Système d'icônes -->
+    <script src="utils/icons.js"></script>
+    <script>
+      // Initialiser les icônes au chargement
+      document.addEventListener('DOMContentLoaded', function() {
+        if (window.getIcon) {
+          const homeIconLink = document.querySelector('#home-icon-link');
+          if (homeIconLink) {
+            homeIconLink.innerHTML = window.getIcon('home', 24, 'white');
+          }
+          
+          const headerIcon = document.querySelector('#header-icon-placeholder');
+          if (headerIcon) {
+            headerIcon.innerHTML = window.getIcon('doctor', 28, 'white');
+          }
+          
+          const cardIconProfessional = document.querySelector('#card-icon-professional');
+          if (cardIconProfessional) {
+            cardIconProfessional.innerHTML = window.getIcon('doctor', 24, '#3b82f6');
+          }
+          
+          const cardIconStats = document.querySelector('#card-icon-stats');
+          if (cardIconStats) {
+            cardIconStats.innerHTML = window.getIcon('stats', 24, '#3b82f6');
+          }
+        }
+      });
+    </script>
+    <!-- Navigation mobile -->
+    <script src="utils/icons.js"></script>
+    <script src="utils/mobile-nav.js" defer></script>
     <!-- Version simplifiée - Fonctionne sans serveur backend -->
     <script src="app-professionnel-simple.js" defer></script>
     <!-- Version complète avec backend (décommenter si vous avez un serveur backend) -->

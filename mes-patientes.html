@@ -2,15 +2,18 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <title>MAMA+ – Mes patientes</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles-ux.css" />
+    <link rel="stylesheet" href="styles-icons.css" />
+    <link rel="stylesheet" href="styles-mobile-nav.css" />
   </head>
   <body>
     <header role="banner" class="tools-header">
       <div class="header-left">
-        <a href="index-professionnel.html" style="color: #fff; text-decoration: none; font-size: 1.5rem; margin-right: 1rem;">←</a>
-        <span class="header-icon">👥</span>
+        <a href="index-professionnel.html" style="color: #fff; text-decoration: none; font-size: 1.5rem; margin-right: 1rem; display: inline-flex; align-items: center;" id="back-icon-link"></a>
+        <span class="header-icon" id="header-patientes-icon"></span>
         <h1>MAMA+ – Mes patientes</h1>
       </div>
       <div id="auth-section" role="navigation">
@@ -29,6 +32,35 @@
             <button id="add-patiente-btn-section" type="button" class="btn-primary" aria-label="Ouvrir le formulaire pour ajouter une nouvelle patiente">+ Ajouter une patiente</button>
           </div>
         </div>
+        
+        <!-- Recherche en temps réel -->
+        <div class="search-container" style="margin-bottom: 1rem;">
+          <input 
+            type="text" 
+            id="search-input" 
+            class="search-input" 
+            placeholder="Rechercher une patiente (nom, ville, téléphone...)"
+            aria-label="Rechercher une patiente"
+          />
+          <span class="search-icon" id="search-icon-placeholder"></span>
+          <div class="search-results-count" id="search-results-count" style="display: none;"></div>
+        </div>
+        
+        <!-- Tri personnalisable -->
+        <div class="sort-container" style="margin-bottom: 1rem;">
+          <span class="sort-label">Trier par:</span>
+          <select id="sort-select" class="sort-select" aria-label="Trier les patientes">
+            <option value="nom-asc">Nom (A-Z)</option>
+            <option value="nom-desc">Nom (Z-A)</option>
+            <option value="age-asc">Âge (croissant)</option>
+            <option value="age-desc">Âge (décroissant)</option>
+            <option value="distance-asc">Distance (proche)</option>
+            <option value="distance-desc">Distance (loin)</option>
+            <option value="risque">Risque (élevé → faible)</option>
+            <option value="derniere-venue">Dernière venue (récent)</option>
+          </select>
+        </div>
+        
         <div class="table-controls-advanced">
           <div class="filters-row">
             <label>
@@ -272,6 +304,28 @@
       <small>Prototype MAMA+ – Amélioration du suivi prénatal</small>
     </footer>
 
+    <!-- Système d'icônes -->
+    <script src="utils/icons.js"></script>
+    <script>
+      // Initialiser les icônes au chargement
+      document.addEventListener('DOMContentLoaded', function() {
+        if (window.getIcon) {
+          const backIconLink = document.querySelector('#back-icon-link');
+          if (backIconLink) {
+            backIconLink.innerHTML = window.getIcon('back', 24, 'white');
+          }
+          
+          const headerPatientesIcon = document.querySelector('#header-patientes-icon');
+          if (headerPatientesIcon) {
+            headerPatientesIcon.innerHTML = window.getIcon('pregnant-woman', 28, 'white');
+          }
+        }
+      });
+    </script>
+    <!-- Composants UX -->
+    <script src="utils/ux-components.js"></script>
+    <!-- Navigation mobile -->
+    <script src="utils/mobile-nav.js" defer></script>
     <!-- Version simplifiée - Fonctionne sans serveur backend -->
     <script src="app-professionnel-simple.js" defer></script>
     <!-- Version complète avec backend (décommenter si vous avez un serveur backend) -->

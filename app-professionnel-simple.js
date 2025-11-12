@@ -13,36 +13,36 @@ const DEFAULT_PATIENTES = [
     prenom: "Awa",
     nom: "Koffi",
     age: 28,
-    ville: "Bamako",
+    ville: "Abidjan",
     distance_centre: 2.3,
     risque: "moyen",
     derniere_venue: "2024-03-15",
     prochaine_cpn: "2024-04-20",
-    telephone: "+22370000001"
+    telephone: "+2250700000001"
   },
   {
     id: 2,
     prenom: "Mariam",
     nom: "Kouadio",
     age: 19,
-    ville: "Bamako",
+    ville: "Abidjan",
     distance_centre: 5.1,
     risque: "élevé",
     derniere_venue: "2024-03-10",
     prochaine_cpn: "2024-04-18",
-    telephone: "+22370000002"
+    telephone: "+2250700000002"
   },
   {
     id: 3,
     prenom: "Fatou",
     nom: "Diallo",
     age: 32,
-    ville: "Sikasso",
+    ville: "Bouaké",
     distance_centre: 1.8,
     risque: "faible",
     derniere_venue: "2024-03-20",
     prochaine_cpn: "2024-04-19",
-    telephone: "+22370000003"
+    telephone: "+2250700000003"
   }
 ];
 
@@ -174,6 +174,10 @@ function filterPatientes(patientes, filters) {
   });
 }
 
+// Variables globales pour la recherche et le tri
+let currentSearchQuery = '';
+let currentSortOption = 'nom-asc';
+
 // Fonction pour afficher les patientes
 function renderPatientes(patientes = null) {
   const tableBody = document.querySelector("#patient-table tbody");
@@ -190,11 +194,59 @@ function renderPatientes(patientes = null) {
   // Utiliser les patientes fournies ou récupérer depuis le stockage
   let allPatientes = patientes || getPatientes();
   
-  // Filtrer
-  const filteredPatientes = filterPatientes(allPatientes, filters);
+  // Appliquer la recherche
+  let filteredPatientes = [...allPatientes];
   
-  // Trier par ID décroissant (les plus récentes en premier)
-  filteredPatientes.sort((a, b) => b.id - a.id);
+  if (currentSearchQuery) {
+    const query = currentSearchQuery.toLowerCase();
+    filteredPatientes = filteredPatientes.filter(p => {
+      const fullName = `${p.prenom || ''} ${p.nom || ''}`.toLowerCase();
+      const ville = (p.ville || '').toLowerCase();
+      const telephone = (p.telephone || '').toLowerCase();
+      return fullName.includes(query) || ville.includes(query) || telephone.includes(query);
+    });
+  }
+  
+  // Filtrer avec les filtres existants
+  filteredPatientes = filterPatientes(filteredPatientes, filters);
+  
+  // Appliquer le tri
+  filteredPatientes.sort((a, b) => {
+    switch (currentSortOption) {
+      case 'nom-asc':
+        return `${a.prenom || ''} ${a.nom || ''}`.localeCompare(`${b.prenom || ''} ${b.nom || ''}`);
+      case 'nom-desc':
+        return `${b.prenom || ''} ${b.nom || ''}`.localeCompare(`${a.prenom || ''} ${a.nom || ''}`);
+      case 'age-asc':
+        return (a.age || 0) - (b.age || 0);
+      case 'age-desc':
+        return (b.age || 0) - (a.age || 0);
+      case 'distance-asc':
+        return (a.distance_centre || 0) - (b.distance_centre || 0);
+      case 'distance-desc':
+        return (b.distance_centre || 0) - (a.distance_centre || 0);
+      case 'risque':
+        const riskOrder = { 'élevé': 3, 'moyen': 2, 'faible': 1 };
+        return (riskOrder[b.risque] || 0) - (riskOrder[a.risque] || 0);
+      case 'derniere-venue':
+        const dateA = a.derniere_venue ? new Date(a.derniere_venue) : new Date(0);
+        const dateB = b.derniere_venue ? new Date(b.derniere_venue) : new Date(0);
+        return dateB - dateA;
+      default:
+        return b.id - a.id; // Par défaut, trier par ID décroissant
+    }
+  });
+  
+  // Mettre à jour le compteur de résultats
+  const resultsCount = document.querySelector('#search-results-count');
+  if (resultsCount) {
+    if (currentSearchQuery) {
+      resultsCount.textContent = `${filteredPatientes.length} résultat(s) trouvé(s)`;
+      resultsCount.style.display = 'block';
+    } else {
+      resultsCount.style.display = 'none';
+    }
+  }
   
   // Vider le tableau
   tableBody.innerHTML = "";
@@ -235,16 +287,16 @@ function renderPatientes(patientes = null) {
       <td>
         <div class="action-buttons">
           <button class="action-btn call-btn" onclick="handleCall('${patiente.telephone || ""}')" title="Appeler" ${!patiente.telephone ? 'disabled' : ''}>
-            📞
+            ${window.getIcon ? window.getIcon('phone', 20) : '📞'}
           </button>
           <button class="action-btn edit-btn" onclick="handleEditPatiente(${patiente.id})" title="Modifier">
-            ✏️
+            ${window.getIcon ? window.getIcon('edit', 20) : '✏️'}
           </button>
           <button class="action-btn view-btn" onclick="handleViewPatiente(${patiente.id})" title="Voir dossier">
-            👁️
+            ${window.getIcon ? window.getIcon('view', 20) : '👁️'}
           </button>
           <button class="action-btn delete-btn" onclick="handleDeletePatiente(${patiente.id}, '${(patiente.prenom || '') + ' ' + (patiente.nom || '')}')" title="Supprimer">
-            🗑️
+            ${window.getIcon ? window.getIcon('delete', 20) : '🗑️'}
           </button>
         </div>
       </td>
@@ -256,12 +308,20 @@ function renderPatientes(patientes = null) {
 // Fonctions d'action
 window.handleCall = function(telephone) {
   if (!telephone || telephone.trim() === "") {
-    alert("Numéro de téléphone non disponible pour cette patiente.");
+    if (window.toast) {
+      window.toast.warning("Numéro de téléphone non disponible pour cette patiente.");
+    } else {
+      alert("Numéro de téléphone non disponible pour cette patiente.");
+    }
     return;
   }
   const cleanPhone = telephone.trim().replace(/\s+/g, "");
   if (!/^\+?[0-9]{8,15}$/.test(cleanPhone)) {
-    alert(`Numéro de téléphone invalide: ${telephone}`);
+    if (window.toast) {
+      window.toast.error(`Numéro de téléphone invalide: ${telephone}`);
+    } else {
+      alert(`Numéro de téléphone invalide: ${telephone}`);
+    }
     return;
   }
   window.location.href = `tel:${cleanPhone}`;
@@ -271,7 +331,11 @@ window.handleEditPatiente = function(patienteId) {
   const patientes = getPatientes();
   const patiente = patientes.find(p => p.id === patienteId);
   if (!patiente) {
-    alert("Patiente introuvable");
+    if (window.toast) {
+      window.toast.error("Patiente introuvable");
+    } else {
+      alert("Patiente introuvable");
+    }
     return;
   }
   
@@ -319,17 +383,38 @@ window.handleViewPatiente = function(patienteId) {
   const patientes = getPatientes();
   const patiente = patientes.find(p => p.id === patienteId);
   if (patiente) {
-    alert(`Dossier de ${patiente.prenom} ${patiente.nom}\n\nÂge: ${patiente.age} ans\nVille: ${patiente.ville}\nDistance: ${patiente.distance_centre} km\nRisque: ${patiente.risque}`);
+    const info = `Dossier de ${patiente.prenom} ${patiente.nom}\n\nÂge: ${patiente.age} ans\nVille: ${patiente.ville}\nDistance: ${patiente.distance_centre} km\nRisque: ${patiente.risque}`;
+    if (window.toast) {
+      window.toast.info(info, 5000);
+    } else {
+      alert(info);
+    }
   }
 };
 
-window.handleDeletePatiente = function(patienteId, patienteName) {
-  if (confirm(`Êtes-vous sûr de vouloir supprimer ${patienteName} ?\n\nCette action est irréversible.`)) {
+window.handleDeletePatiente = async function(patienteId, patienteName) {
+  const confirmed = window.confirmAction 
+    ? await window.confirmAction(
+        `Êtes-vous sûr de vouloir supprimer ${patienteName} ?\n\nCette action est irréversible.`,
+        'Supprimer une patiente',
+        { danger: true, confirmText: 'Supprimer', cancelText: 'Annuler' }
+      )
+    : confirm(`Êtes-vous sûr de vouloir supprimer ${patienteName} ?\n\nCette action est irréversible.`);
+  
+  if (confirmed) {
     if (deletePatiente(patienteId)) {
-      alert(`Patiente ${patienteName} supprimée avec succès.`);
+      if (window.toast) {
+        window.toast.success(`Patiente ${patienteName} supprimée avec succès.`);
+      } else {
+        alert(`Patiente ${patienteName} supprimée avec succès.`);
+      }
       renderPatientes();
     } else {
-      alert("Erreur lors de la suppression");
+      if (window.toast) {
+        window.toast.error("Erreur lors de la suppression");
+      } else {
+        alert("Erreur lors de la suppression");
+      }
     }
   }
 };
@@ -347,7 +432,11 @@ window.handleAddPatienteSubmit = function(event) {
   
   // Vérifier que l'ID est fourni (sauf en mode modification)
   if (!editId && (!patienteId || patienteId <= 0)) {
-    alert("L'ID du patient est obligatoire. Veuillez saisir un ID valide.");
+    if (window.toast) {
+      window.toast.warning("L'ID du patient est obligatoire. Veuillez saisir un ID valide.");
+    } else {
+      alert("L'ID du patient est obligatoire. Veuillez saisir un ID valide.");
+    }
     if (patienteIdInput) {
       patienteIdInput.focus();
     }
@@ -370,14 +459,26 @@ window.handleAddPatienteSubmit = function(event) {
     if (editId) {
       // Modification
       updatePatiente(parseInt(editId), formData);
-      alert("Patiente modifiée avec succès !");
+      if (window.toast) {
+        window.toast.success("Patiente modifiée avec succès !");
+      } else {
+        alert("Patiente modifiée avec succès !");
+      }
     } else {
       // Ajout
       addPatiente(formData);
-      alert("Patiente ajoutée avec succès !");
+      if (window.toast) {
+        window.toast.success("Patiente ajoutée avec succès !");
+      } else {
+        alert("Patiente ajoutée avec succès !");
+      }
     }
   } catch (error) {
-    alert("Erreur : " + error.message);
+    if (window.toast) {
+      window.toast.error("Erreur : " + error.message);
+    } else {
+      alert("Erreur : " + error.message);
+    }
     return;
   }
   
@@ -552,49 +653,49 @@ function renderDashboardStats() {
     
     statsContent.innerHTML = `
       <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0;">
-        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">👥</div>
+        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">${window.getIcon ? window.getIcon('users', 28, '#3b82f6') : '👥'}</div>
         <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.1rem;">${stats.totalPatientes}</div>
         <div class="stat-label" style="color: rgba(255,255,255,0.9); font-size: 0.7rem; font-weight: 500; line-height: 1.2;">Total patientes</div>
       </div>
       
       <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0;">
-        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">🔴</div>
+        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">${window.getIcon ? window.getIcon('risk-high', 28, '#ef4444') : '🔴'}</div>
         <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.1rem;">${stats.risqueEleve}</div>
         <div class="stat-label" style="color: rgba(255,255,255,0.9); font-size: 0.7rem; font-weight: 500; line-height: 1.2;">Risque élevé</div>
       </div>
       
       <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0;">
-        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">⚠️</div>
+        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">${window.getIcon ? window.getIcon('warning', 28, '#f59e0b') : '⚠️'}</div>
         <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.1rem;">${stats.cpnRetard}</div>
         <div class="stat-label" style="color: rgba(255,255,255,0.9); font-size: 0.7rem; font-weight: 500; line-height: 1.2;">CPN en retard</div>
       </div>
       
       <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0;">
-        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">📅</div>
+        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">${window.getIcon ? window.getIcon('calendar', 28, '#3b82f6') : '📅'}</div>
         <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.1rem;">${stats.cpnAujourdhui}</div>
         <div class="stat-label" style="color: rgba(255,255,255,0.9); font-size: 0.7rem; font-weight: 500; line-height: 1.2;">CPN aujourd'hui</div>
       </div>
       
       <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0;">
-        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">✅</div>
+        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">${window.getIcon ? window.getIcon('success', 28, '#10b981') : '✅'}</div>
         <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.1rem;">${stats.consultationsAujourdhui}</div>
         <div class="stat-label" style="color: rgba(255,255,255,0.9); font-size: 0.7rem; font-weight: 500; line-height: 1.2;">Consultations aujourd'hui</div>
       </div>
       
       <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0;">
-        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">🚫</div>
+        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">${window.getIcon ? window.getIcon('error', 28, '#ef4444') : '🚫'}</div>
         <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.1rem;">${stats.jamaisVenue}</div>
         <div class="stat-label" style="color: rgba(255,255,255,0.9); font-size: 0.7rem; font-weight: 500; line-height: 1.2;">Jamais venues</div>
       </div>
       
       <div class="stat-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0;">
-        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">📊</div>
+        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">${window.getIcon ? window.getIcon('stats', 28, '#3b82f6') : '📊'}</div>
         <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.1rem;">${stats.tauxObservance}%</div>
         <div class="stat-label" style="color: rgba(255,255,255,0.9); font-size: 0.7rem; font-weight: 500; line-height: 1.2;">Taux d'observance</div>
       </div>
       
       <div class="stat-card" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0;">
-        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">🟠</div>
+        <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">${window.getIcon ? window.getIcon('risk-medium', 28, '#f59e0b') : '🟠'}</div>
         <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.1rem;">${stats.risqueMoyen}</div>
         <div class="stat-label" style="color: rgba(255,255,255,0.9); font-size: 0.7rem; font-weight: 500; line-height: 1.2;">Risque modéré</div>
       </div>
@@ -603,7 +704,7 @@ function renderDashboardStats() {
     console.error("Erreur lors du calcul des statistiques:", error);
     statsContent.innerHTML = `
       <div class="error-state" style="padding: 2rem; text-align: center; color: #dc2626;">
-        <span class="error-icon" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">⚠️</span>
+        <span class="error-icon" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">${window.getIcon ? window.getIcon('warning', 32, '#f59e0b') : '⚠️'}</span>
         <p>Erreur lors du chargement des indicateurs</p>
       </div>
     `;
@@ -796,7 +897,7 @@ window.renderStatsPage = function() {
     console.error("Erreur lors du calcul des statistiques:", error);
     statsContent.innerHTML = `
       <div class="error-state" style="padding: 2rem; text-align: center; color: #dc2626;">
-        <span class="error-icon" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">⚠️</span>
+        <span class="error-icon" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">${window.getIcon ? window.getIcon('warning', 32, '#f59e0b') : '⚠️'}</span>
         <p>Erreur lors du chargement des statistiques</p>
       </div>
     `;
@@ -908,7 +1009,7 @@ window.renderPerformancePage = function() {
     console.error("Erreur lors du calcul de la performance:", error);
     performanceContent.innerHTML = `
       <div class="error-state" style="padding: 2rem; text-align: center; color: #dc2626;">
-        <span class="error-icon" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">⚠️</span>
+        <span class="error-icon" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">${window.getIcon ? window.getIcon('warning', 32, '#f59e0b') : '⚠️'}</span>
         <p>Erreur lors du chargement des statistiques de performance</p>
       </div>
     `;
@@ -939,7 +1040,11 @@ window.handleFilterChange = function() {
 window.exportReport = function(format) {
   const patientes = getPatientes();
   if (patientes.length === 0) {
-    alert("Aucune patiente à exporter");
+    if (window.toast) {
+      window.toast.warning("Aucune patiente à exporter");
+    } else {
+      alert("Aucune patiente à exporter");
+    }
     return;
   }
   
@@ -958,7 +1063,11 @@ window.exportReport = function(format) {
   link.click();
   document.body.removeChild(link);
   
-  alert(`Export réussi ! ${patientes.length} patiente(s) exportée(s) en CSV.`);
+  if (window.toast) {
+    window.toast.success(`Export réussi ! ${patientes.length} patiente(s) exportée(s) en CSV.`);
+  } else {
+    alert(`Export réussi ! ${patientes.length} patiente(s) exportée(s) en CSV.`);
+  }
 };
 
 // Initialisation au chargement de la page
@@ -969,6 +1078,34 @@ document.addEventListener("DOMContentLoaded", () => {
   // Afficher les patientes (si on est sur la page mes-patientes)
   if (document.querySelector("#patient-table")) {
     renderPatientes();
+  }
+  
+  // Initialiser l'icône de recherche
+  const searchIconPlaceholder = document.querySelector("#search-icon-placeholder");
+  if (searchIconPlaceholder && window.getIcon) {
+    searchIconPlaceholder.innerHTML = window.getIcon('search', 20, '#6b7280');
+  }
+  
+  // Gestionnaire de recherche en temps réel
+  const searchInput = document.querySelector("#search-input");
+  if (searchInput) {
+    const debouncedSearch = window.debounce ? window.debounce((e) => {
+      currentSearchQuery = e.target.value.trim();
+      renderPatientes();
+    }, 300) : ((e) => {
+      currentSearchQuery = e.target.value.trim();
+      renderPatientes();
+    });
+    searchInput.addEventListener("input", debouncedSearch);
+  }
+  
+  // Gestionnaire de tri
+  const sortSelect = document.querySelector("#sort-select");
+  if (sortSelect) {
+    sortSelect.addEventListener("change", (e) => {
+      currentSortOption = e.target.value;
+      renderPatientes();
+    });
   }
   
   // Configurer les event listeners pour les filtres

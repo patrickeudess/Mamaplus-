@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MAMA+ – Accueil</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles-icons.css" />
     <style>
       .welcome-container {
         display: flex;
@@ -94,6 +95,19 @@
       .icon {
         font-size: 3rem;
         margin-bottom: 1rem;
+      }
+      #patiente-card-icon {
+        border-radius: 0.75rem;
+        padding: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      #patiente-card-icon svg {
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+        width: 100%;
+        height: 100%;
       }
       .login-section {
         margin-top: 2rem;
@@ -252,7 +266,7 @@
         
         <div class="user-type-selection">
           <a href="index-patriente.html" class="user-type-card" id="patiente-card" data-type="patiente" role="button" tabindex="0" aria-label="Accéder à l'interface patiente">
-            <div class="icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">👩</div>
+            <div class="icon" id="patiente-card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 0.75rem; padding: 0.5rem;"></div>
             <h3>Patiente</h3>
             <p>Consultez votre dossier médical, vos rendez-vous CPN et accédez à des conseils personnalisés</p>
             <div style="margin-top: 1rem; font-size: 0.85rem; color: #2563eb; font-weight: 600;">→ Accéder à mon espace</div>
@@ -322,6 +336,19 @@
       </div>
     </div>
 
+    <!-- Système d'icônes -->
+    <script src="utils/icons.js"></script>
+    <script>
+      // Initialiser les icônes au chargement
+      document.addEventListener('DOMContentLoaded', function() {
+        if (window.getIcon) {
+          const patienteCardIcon = document.querySelector('#patiente-card-icon');
+          if (patienteCardIcon) {
+            patienteCardIcon.innerHTML = window.getIcon('pregnant-woman', 60, 'white');
+          }
+        }
+      });
+    </script>
     <script src="app-home.js" defer></script>
   </body>
 </html>

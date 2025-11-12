@@ -271,37 +271,40 @@ function renderDossier(dossier) {
         
         return `
             <div class="dossier-item consultation-item">
-              <div class="item-header-consultation">
-                <div class="item-icon-large">🩺</div>
-                <div class="item-date-enhanced">
-                  <div class="date-day">${dayName}. ${day} ${month} ${year}</div>
-                </div>
-              </div>
+              <div class="item-icon-large consultation-icon">🩺</div>
               <div class="item-content-enhanced">
-                <div class="item-metrics-enhanced">
+                <div class="consultation-header">
+                  <div class="consultation-header-left">
+                    <strong class="consultation-title">Consultation médicale</strong>
+                    <button class="help-icon consultation-help" aria-label="Information sur la consultation" data-help="Consultation de suivi de grossesse avec mesure du poids et de la tension artérielle.">ℹ️</button>
+                  </div>
+                </div>
+                <div class="consultation-date-full">
+                  ${date.toLocaleDateString("fr-FR", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                  }).toLowerCase()}
+                </div>
+                <div class="consultation-metrics">
                   ${c.poids !== null && c.poids !== undefined ? `
-                    <div class="metric-card" role="group" aria-label="Métrique de poids">
-                      <div class="metric-header">
-                        <span class="metric-label">POIDS</span>
-                        <button class="help-icon" aria-label="Information sur le poids" data-help="Le poids est mesuré à chaque consultation pour suivre l'évolution de votre grossesse. Un gain de poids progressif est normal et nécessaire.">ℹ️</button>
-                      </div>
-                      <span class="metric-value" aria-label="${c.poids} kilogrammes">${c.poids} kg</span>
+                    <div class="consultation-metric-item">
+                      <span class="metric-label-small">Poids:</span>
+                      <span class="metric-value-small">${c.poids} kg</span>
                       ${getWeightAdvice(c.poids, semaineGrossesse) ? `
-                        <div class="metric-advice ${getWeightAdvice(c.poids, semaineGrossesse).type}">
+                        <div class="metric-advice-small ${getWeightAdvice(c.poids, semaineGrossesse).type}">
                           ${getWeightAdvice(c.poids, semaineGrossesse).message}
                         </div>
                       ` : ""}
                     </div>
                   ` : ""}
                   ${c.tension_arterielle_systolique !== null && c.tension_arterielle_systolique !== undefined ? `
-                    <div class="metric-card" role="group" aria-label="Métrique de tension artérielle">
-                      <div class="metric-header">
-                        <span class="metric-label">TA</span>
-                        <button class="help-icon" aria-label="Information sur la tension artérielle" data-help="La tension artérielle (TA) mesure la pression du sang dans vos artères. Pendant la grossesse, une tension normale est importante pour votre santé et celle de votre bébé.">ℹ️</button>
-                      </div>
-                      <span class="metric-value" aria-label="Tension artérielle ${c.tension_arterielle_systolique} sur ${c.tension_arterielle_diastolique || 'non mesurée'}">${c.tension_arterielle_systolique}/${c.tension_arterielle_diastolique || "–"}</span>
+                    <div class="consultation-metric-item">
+                      <span class="metric-label-small">Tension artérielle:</span>
+                      <span class="metric-value-small">${c.tension_arterielle_systolique}/${c.tension_arterielle_diastolique || "–"}</span>
                       ${getBloodPressureAdvice(c.tension_arterielle_systolique, c.tension_arterielle_diastolique) ? `
-                        <div class="metric-advice ${getBloodPressureAdvice(c.tension_arterielle_systolique, c.tension_arterielle_diastolique).type}">
+                        <div class="metric-advice-small ${getBloodPressureAdvice(c.tension_arterielle_systolique, c.tension_arterielle_diastolique).type}">
                           ${getBloodPressureAdvice(c.tension_arterielle_systolique, c.tension_arterielle_diastolique).message}
                         </div>
                       ` : ""}
@@ -309,7 +312,7 @@ function renderDossier(dossier) {
                   ` : ""}
                 </div>
                 ${c.notes ? `
-                  <div class="item-notes-enhanced">
+                  <div class="consultation-notes">
                     <p>${c.notes}</p>
                   </div>
                 ` : ""}
@@ -418,9 +421,14 @@ function renderDossier(dossier) {
         .join("")
     : '<div class="empty-state-small"><p>Aucun rendez-vous programmé.</p></div>';
 
+  // Structure du dossier : chaque section contient uniquement ses propres données
+  // - consultations-section : uniquement les consultations médicales
+  // - cpn-section : uniquement les rendez-vous CPN
+  // - vaccinations-section : uniquement les vaccinations
   dossierContent.innerHTML = `
-    <div class="dossier-grids-enhanced">
-      <article class="dossier-section-enhanced section-icon-consultation">
+    <div class="dossier-grids-enhanced" id="dossier-sections">
+      <!-- Section Consultations : uniquement les consultations médicales -->
+      <article class="dossier-section-enhanced section-icon-consultation" id="consultations-section" role="tabpanel" aria-labelledby="tab-consultations" aria-hidden="false">
         <div class="section-header-enhanced">
           <div class="section-icon-wrapper section-icon-consultation">
             <span class="section-icon-large">🩺</span>
@@ -433,7 +441,8 @@ function renderDossier(dossier) {
         <div class="dossier-list-enhanced">${consultations}</div>
       </article>
       
-      <article class="dossier-section-enhanced section-icon-cpn">
+      <!-- Section CPN : uniquement les rendez-vous CPN -->
+      <article class="dossier-section-enhanced section-icon-cpn" id="cpn-section" role="tabpanel" aria-labelledby="tab-cpn" aria-hidden="true">
         <div class="section-header-enhanced">
           <div class="section-icon-wrapper section-icon-cpn">
             <span class="section-icon-large">📅</span>
@@ -446,7 +455,8 @@ function renderDossier(dossier) {
         <div class="dossier-list-enhanced">${cpnList}</div>
       </article>
       
-      <article class="dossier-section-enhanced section-icon-vaccination">
+      <!-- Section Vaccinations : uniquement les vaccinations -->
+      <article class="dossier-section-enhanced section-icon-vaccination" id="vaccinations-section" role="tabpanel" aria-labelledby="tab-vaccinations" aria-hidden="true">
         <div class="section-header-enhanced">
           <div class="section-icon-wrapper section-icon-vaccination">
             <span class="section-icon-large">💉</span>
@@ -458,16 +468,168 @@ function renderDossier(dossier) {
         </div>
         <div class="dossier-list-enhanced">${vaccinations}</div>
       </article>
+      
+      <!-- Section Établissements de santé : hôpitaux et pharmacies à proximité -->
+      <article class="dossier-section-enhanced section-icon-facilities" id="facilities-section" role="tabpanel" aria-labelledby="tab-facilities" aria-hidden="true">
+        <div class="section-header-enhanced">
+          <div class="section-icon-wrapper section-icon-facilities">
+            <span class="section-icon-large">🏥</span>
+          </div>
+          <div class="section-title-wrapper">
+            <h3 class="section-title">Établissements de santé</h3>
+            <span class="section-count" id="facilities-count">0</span>
+          </div>
+        </div>
+        <div class="dossier-list-enhanced" id="facilities-list">
+          <div class="loading-state-small">
+            <p>Chargement des établissements...</p>
+          </div>
+        </div>
+      </article>
     </div>
   `;
+  
+  // Initialiser les onglets après le rendu (l'onglet "Consultations" sera actif par défaut)
+  setTimeout(() => {
+    initDossierTabs();
+    // Afficher la section Consultations par défaut
+    const consultationsSection = document.querySelector("#consultations-section");
+    if (consultationsSection) {
+      consultationsSection.style.display = "";
+      consultationsSection.setAttribute("aria-hidden", "false");
+    }
+  }, 100);
+  
+  // Charger et afficher les établissements de santé à proximité
+  setTimeout(() => {
+    renderHealthFacilities(dossier.patiente);
+  }, 200);
+}
+
+// Afficher les établissements de santé à proximité
+function renderHealthFacilities(patiente) {
+  if (!patiente || !window.getNearestFacilities) {
+    const facilitiesList = document.getElementById('facilities-list') || document.getElementById('facilities-list-empty');
+    if (facilitiesList) {
+      facilitiesList.innerHTML = '<div class="empty-state-small"><p>Données de localisation non disponibles</p></div>';
+    }
+    return;
+  }
+  
+  try {
+    const { hopitaux, pharmacies } = window.getNearestFacilities(patiente, 5);
+    const facilitiesList = document.getElementById('facilities-list') || document.getElementById('facilities-list-empty');
+    const facilitiesCount = document.getElementById('facilities-count') || document.getElementById('facilities-count-empty');
+    
+    if (!facilitiesList) return;
+    
+    let html = '';
+    
+    // Section Hôpitaux
+    if (hopitaux.length > 0) {
+      html += `
+        <div class="facilities-category">
+          <h4 class="facilities-category-title">
+            <span class="facility-icon hospital-icon">🏥</span>
+            Hôpitaux à proximité
+          </h4>
+          <div class="facilities-grid">
+            ${hopitaux.map(hopital => `
+              <div class="facility-card hospital-card">
+                <div class="facility-header">
+                  <h5 class="facility-name">${hopital.nom}</h5>
+                  <span class="facility-distance">${hopital.distance.toFixed(1)} km</span>
+                </div>
+                <div class="facility-details">
+                  <p class="facility-address">📍 ${hopital.adresse}</p>
+                  ${hopital.telephone ? `
+                    <p class="facility-phone">
+                      <a href="tel:${hopital.telephone}" class="phone-link">
+                        📞 ${hopital.telephone}
+                      </a>
+                    </p>
+                  ` : ''}
+                  ${hopital.services && hopital.services.length > 0 ? `
+                    <div class="facility-services">
+                      <strong>Services:</strong>
+                      <div class="services-tags">
+                        ${hopital.services.map(service => `<span class="service-tag">${service}</span>`).join('')}
+                      </div>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+    
+    // Section Pharmacies
+    if (pharmacies.length > 0) {
+      html += `
+        <div class="facilities-category">
+          <h4 class="facilities-category-title">
+            <span class="facility-icon pharmacy-icon">💊</span>
+            Pharmacies à proximité
+          </h4>
+          <div class="facilities-grid">
+            ${pharmacies.map(pharmacie => `
+              <div class="facility-card pharmacy-card">
+                <div class="facility-header">
+                  <h5 class="facility-name">${pharmacie.nom}</h5>
+                  <span class="facility-distance">${pharmacie.distance.toFixed(1)} km</span>
+                </div>
+                <div class="facility-details">
+                  <p class="facility-address">📍 ${pharmacie.adresse}</p>
+                  ${pharmacie.telephone ? `
+                    <p class="facility-phone">
+                      <a href="tel:${pharmacie.telephone}" class="phone-link">
+                        📞 ${pharmacie.telephone}
+                      </a>
+                    </p>
+                  ` : ''}
+                  ${pharmacie.services && pharmacie.services.length > 0 ? `
+                    <div class="facility-services">
+                      <strong>Services:</strong>
+                      <div class="services-tags">
+                        ${pharmacie.services.map(service => `<span class="service-tag">${service}</span>`).join('')}
+                      </div>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+    
+    if (html === '') {
+      html = '<div class="empty-state-small"><p>Aucun établissement de santé trouvé dans votre région</p></div>';
+    }
+    
+    facilitiesList.innerHTML = html;
+    
+    if (facilitiesCount) {
+      facilitiesCount.textContent = hopitaux.length + pharmacies.length;
+    }
+    
+  } catch (error) {
+    console.error('Erreur lors du chargement des établissements:', error);
+    const facilitiesList = document.getElementById('facilities-list');
+    if (facilitiesList) {
+      facilitiesList.innerHTML = '<div class="empty-state-small"><p>Erreur lors du chargement des établissements</p></div>';
+    }
+  }
 }
 
 function renderEmptyDossier() {
   if (!dossierContent) return;
   
   dossierContent.innerHTML = `
-    <div class="dossier-grids-enhanced">
-      <article class="dossier-section-enhanced section-icon-consultation">
+    <div class="dossier-grids-enhanced" id="dossier-sections">
+      <article class="dossier-section-enhanced section-icon-consultation" id="consultations-section" role="tabpanel" aria-labelledby="tab-consultations" aria-hidden="false">
         <div class="section-header-enhanced">
           <div class="section-icon-wrapper section-icon-consultation">
             <span class="section-icon-large">🩺</span>
@@ -481,7 +643,7 @@ function renderEmptyDossier() {
           <p>Aucune consultation enregistrée pour le moment.</p>
         </div>
       </article>
-      <article class="dossier-section-enhanced section-icon-cpn">
+      <article class="dossier-section-enhanced section-icon-cpn" id="cpn-section" role="tabpanel" aria-labelledby="tab-cpn" aria-hidden="false">
         <div class="section-header-enhanced">
           <div class="section-icon-wrapper section-icon-cpn">
             <span class="section-icon-large">📅</span>
@@ -495,7 +657,7 @@ function renderEmptyDossier() {
           <p>Aucun rendez-vous programmé pour le moment.</p>
         </div>
       </article>
-      <article class="dossier-section-enhanced section-icon-vaccination">
+      <article class="dossier-section-enhanced section-icon-vaccination" id="vaccinations-section" role="tabpanel" aria-labelledby="tab-vaccinations" aria-hidden="false">
         <div class="section-header-enhanced">
           <div class="section-icon-wrapper section-icon-vaccination">
             <span class="section-icon-large">💉</span>
@@ -509,8 +671,125 @@ function renderEmptyDossier() {
           <p>Aucune vaccination enregistrée pour le moment.</p>
         </div>
       </article>
+      <article class="dossier-section-enhanced section-icon-facilities" id="facilities-section" role="tabpanel" aria-labelledby="tab-facilities" aria-hidden="false">
+        <div class="section-header-enhanced">
+          <div class="section-icon-wrapper section-icon-facilities">
+            <span class="section-icon-large">🏥</span>
+          </div>
+          <div class="section-title-wrapper">
+            <h3 class="section-title">Établissements de santé</h3>
+            <span class="section-count" id="facilities-count-empty">0</span>
+          </div>
+        </div>
+        <div class="dossier-list-enhanced" id="facilities-list-empty">
+          <div class="loading-state-small">
+            <p>Chargement des établissements...</p>
+          </div>
+        </div>
+      </article>
     </div>
   `;
+  
+  // Initialiser les onglets après le rendu
+  setTimeout(initDossierTabs, 100);
+  
+  // Charger les établissements même si le dossier est vide
+  setTimeout(() => {
+    if (window.getNearestFacilities) {
+      // Essayer de récupérer les données de la patiente depuis localStorage
+      const stored = localStorage.getItem('mama_patiente_data');
+      if (stored) {
+        try {
+          const patiente = JSON.parse(stored);
+          renderHealthFacilities(patiente);
+        } catch (e) {
+          console.error('Erreur lors du chargement de la patiente:', e);
+        }
+      }
+    }
+  }, 200);
+}
+
+// Gestion des onglets du dossier médical
+function initDossierTabs() {
+  const tabBtns = document.querySelectorAll("#dossier-tabs .tab-btn-enhanced");
+  const sections = {
+    consultations: document.querySelector("#consultations-section"),
+    cpn: document.querySelector("#cpn-section"),
+    vaccinations: document.querySelector("#vaccinations-section"),
+    facilities: document.querySelector("#facilities-section")
+  };
+  
+  const container = document.querySelector("#dossier-sections");
+  
+  if (!tabBtns.length) return;
+  
+  function switchDossierTab(tabName) {
+    // Désactiver tous les onglets
+    tabBtns.forEach(btn => {
+      btn.classList.remove("active");
+      btn.setAttribute("aria-selected", "false");
+      btn.setAttribute("tabindex", "-1");
+    });
+    
+    // Activer l'onglet sélectionné
+    const activeBtn = document.querySelector(`#dossier-tabs .tab-btn-enhanced[data-tab="${tabName}"]`);
+    if (activeBtn) {
+      activeBtn.classList.add("active");
+      activeBtn.setAttribute("aria-selected", "true");
+      activeBtn.setAttribute("tabindex", "0");
+      activeBtn.focus();
+    }
+    
+    // Masquer toutes les sections
+    if (container) {
+      container.style.display = "grid";
+      container.style.gridTemplateColumns = "1fr";
+    }
+    Object.values(sections).forEach(section => {
+      if (section) {
+        section.style.display = "none";
+        section.setAttribute("aria-hidden", "true");
+      }
+    });
+    
+    // Afficher uniquement la section sélectionnée
+    if (sections[tabName]) {
+      sections[tabName].style.display = "";
+      sections[tabName].setAttribute("aria-hidden", "false");
+    }
+  }
+  
+  // Gestion des clics sur les onglets
+  tabBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tabName = btn.getAttribute("data-tab");
+      switchDossierTab(tabName);
+    });
+    
+    // Navigation au clavier
+    btn.addEventListener("keydown", (e) => {
+      const tabs = Array.from(tabBtns);
+      const currentIndex = tabs.indexOf(btn);
+      
+      if (e.key === "ArrowLeft" && currentIndex > 0) {
+        e.preventDefault();
+        switchDossierTab(tabs[currentIndex - 1].getAttribute("data-tab"));
+      } else if (e.key === "ArrowRight" && currentIndex < tabs.length - 1) {
+        e.preventDefault();
+        switchDossierTab(tabs[currentIndex + 1].getAttribute("data-tab"));
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        switchDossierTab(tabs[0].getAttribute("data-tab"));
+      } else if (e.key === "End") {
+        e.preventDefault();
+        switchDossierTab(tabs[tabs.length - 1].getAttribute("data-tab"));
+      } else if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        switchDossierTab(btn.getAttribute("data-tab"));
+      }
+    });
+  });
 }
 
 function loadSavedPatienteData() {
@@ -543,12 +822,7 @@ async function bootstrap() {
       `;
     }
     
-    if (userInfo) {
-      userInfo.classList.remove("hidden");
-      if (userName) {
-        userName.textContent = "Mode Développement";
-      }
-    }
+    // Section user-info masquée - Mode développement supprimé
     
     const savedData = loadSavedPatienteData();
     if (savedData) {

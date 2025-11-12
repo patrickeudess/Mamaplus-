@@ -2,15 +2,17 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <title>MAMA+ – Mon espace patiente</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles-icons.css" />
+    <link rel="stylesheet" href="styles-mobile-nav.css" />
   </head>
   <body>
     <header role="banner" class="tools-header">
       <div class="header-left">
-        <a href="index.html" style="color: #fff; text-decoration: none; font-size: 1.5rem; margin-right: 1rem;" title="Retour à l'accueil">🏠</a>
-        <span class="header-icon">👩</span>
+        <a href="index.html" style="color: #fff; text-decoration: none; font-size: 1.5rem; margin-right: 1rem; display: inline-flex; align-items: center;" title="Retour à l'accueil" id="home-icon-link-patriente"></a>
+        <span class="header-icon" id="header-icon-patriente"></span>
       <h1>MAMA+ – Mon espace</h1>
       </div>
       <div id="auth-section" role="navigation">
@@ -230,6 +232,26 @@
       <small>Prototype MAMA+ – Amélioration du suivi prénatal</small>
     </footer>
 
+    <!-- Système d'icônes -->
+    <script src="utils/icons.js"></script>
+    <script>
+      // Initialiser les icônes au chargement
+      document.addEventListener('DOMContentLoaded', function() {
+        if (window.getIcon) {
+          const homeIconLink = document.querySelector('#home-icon-link-patriente');
+          if (homeIconLink) {
+            homeIconLink.innerHTML = window.getIcon('home', 24, 'white');
+          }
+          
+          const headerIcon = document.querySelector('#header-icon-patriente');
+          if (headerIcon) {
+            headerIcon.innerHTML = window.getIcon('pregnant-woman', 28, 'white');
+          }
+        }
+      });
+    </script>
+    <!-- Navigation mobile -->
+    <script src="utils/mobile-nav.js" defer></script>
     <script src="app-patriente.js" defer></script>
   </body>
 </html>
