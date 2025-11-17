@@ -11,6 +11,14 @@ const chatbotResponses = {
   "exercices": "Pendant la grossesse, les exercices doux sont recommandés : marche, natation, yoga prénatal. Évitez les sports de contact et les activités à haut risque. Consultez votre médecin avant de commencer un nouveau programme d'exercice."
 };
 
+// Réponses pour les symptômes (messages d'alerte)
+const symptomResponses = {
+  "saignement": "🚨 Signe d'alerte. Veuillez consulter immédiatement. Les saignements pendant la grossesse nécessitent une évaluation médicale urgente. Contactez votre médecin ou rendez-vous aux urgences.",
+  "maux-tete": "🚨 Signe d'alerte. Veuillez consulter immédiatement. Des maux de tête forts pendant la grossesse peuvent indiquer un problème sérieux. Contactez votre médecin sans délai.",
+  "fievre": "🚨 Signe d'alerte. Veuillez consulter immédiatement. La fièvre pendant la grossesse nécessite une attention médicale urgente. Contactez votre médecin ou rendez-vous aux urgences.",
+  "vomissements": "🚨 Signe d'alerte. Veuillez consulter immédiatement. Des vomissements persistants peuvent entraîner une déshydratation et nécessitent une évaluation médicale. Contactez votre médecin sans délai."
+};
+
 function addMessage(text, isBot = false) {
   const messageDiv = document.createElement("div");
   messageDiv.className = `chatbot-message ${isBot ? "bot" : "user"}`;
@@ -36,6 +44,23 @@ function addMessage(text, isBot = false) {
 
 function getBotResponse(question) {
   const lowerQuestion = question.toLowerCase();
+  
+  // Détection des symptômes
+  if (lowerQuestion.includes("saignement") || lowerQuestion.includes("sang")) {
+    return symptomResponses.saignement;
+  }
+  
+  if (lowerQuestion.includes("maux de tête") || lowerQuestion.includes("mal de tête") || lowerQuestion.includes("céphalée")) {
+    return symptomResponses["maux-tete"];
+  }
+  
+  if (lowerQuestion.includes("fièvre") || lowerQuestion.includes("fievre") || lowerQuestion.includes("température")) {
+    return symptomResponses.fievre;
+  }
+  
+  if (lowerQuestion.includes("vomissement") || lowerQuestion.includes("vomir") || lowerQuestion.includes("nausée")) {
+    return symptomResponses.vomissements;
+  }
   
   // Recherche de mots-clés
   if (lowerQuestion.includes("nutrition") || lowerQuestion.includes("aliment") || lowerQuestion.includes("manger")) {
@@ -86,12 +111,72 @@ if (chatbotInput) {
   });
 }
 
+// Gestion du bouton "Je ressens un symptôme"
+const symptomBtn = document.querySelector("#symptom-btn");
+const symptomsList = document.querySelector("#symptoms-list");
+const symptomItemBtns = document.querySelectorAll(".symptom-item-btn");
+const suggestionsList = document.querySelector(".suggestions-list");
+
+if (symptomBtn) {
+  symptomBtn.addEventListener("click", () => {
+    // Afficher/masquer la liste des symptômes
+    if (symptomsList) {
+      symptomsList.classList.toggle("hidden");
+      
+      // Si on affiche la liste, masquer les autres suggestions
+      if (suggestionsList) {
+        suggestionsList.style.display = symptomsList.classList.contains("hidden") ? "flex" : "none";
+      }
+    }
+  });
+}
+
+// Gestion des boutons de symptômes
+symptomItemBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const symptom = btn.getAttribute("data-symptom");
+    const symptomText = btn.textContent.trim();
+    
+    // Ajouter le message de l'utilisateur
+    addMessage(symptomText, false);
+    
+    // Masquer la liste des symptômes
+    if (symptomsList) {
+      symptomsList.classList.add("hidden");
+    }
+    
+    // Réafficher les suggestions
+    if (suggestionsList) {
+      suggestionsList.style.display = "flex";
+    }
+    
+    // Simuler un délai de réponse
+    setTimeout(() => {
+      const response = symptomResponses[symptom] || "🚨 Signe d'alerte. Veuillez consulter immédiatement.";
+      addMessage(response, true);
+    }, 500);
+  });
+  
+  // Effet hover
+  btn.addEventListener("mouseenter", () => {
+    btn.style.background = "#fee2e2";
+  });
+  btn.addEventListener("mouseleave", () => {
+    btn.style.background = "white";
+  });
+});
+
 // Suggestions
 suggestionBtns.forEach(btn => {
+  // Ignorer le bouton symptôme qui a son propre gestionnaire
+  if (btn.id === "symptom-btn") return;
+  
   btn.addEventListener("click", () => {
     const question = btn.getAttribute("data-question");
-    chatbotInput.value = question;
-    sendMessage();
+    if (question) {
+      chatbotInput.value = question;
+      sendMessage();
+    }
   });
 });
 

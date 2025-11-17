@@ -433,6 +433,14 @@ async function loadGeoData() {
       ];
     }
     
+    // Sauvegarder toutes les patientes pour les filtres
+    const allPatientes = [...patientes];
+    
+    // Appliquer les filtres globaux si disponibles
+    if (window.filterPatientesByGlobalFilters) {
+      patientes = window.filterPatientesByGlobalFilters(patientes);
+    }
+    
     currentPatientes = patientes;
     currentRisksMap = {};
     
@@ -446,15 +454,18 @@ async function loadGeoData() {
       }
     });
     
-    // Remplir le filtre de villes
-    const villes = [...new Set(patientes.map(p => p.ville).filter(Boolean))].sort();
+    // Remplir le filtre de villes avec toutes les patientes (pas seulement les filtrées)
+    const villes = [...new Set(allPatientes.map(p => p.ville).filter(Boolean))].sort();
     const villeSelect = document.getElementById('filter-ville');
-    villes.forEach(ville => {
-      const option = document.createElement('option');
-      option.value = ville;
-      option.textContent = ville;
-      villeSelect.appendChild(option);
-    });
+    if (villeSelect) {
+      villeSelect.innerHTML = '<option value="all">Toutes les villes</option>';
+      villes.forEach(ville => {
+        const option = document.createElement('option');
+        option.value = ville;
+        option.textContent = ville;
+        villeSelect.appendChild(option);
+      });
+    }
     
     // Initialiser la carte et afficher les données
     initMap();
@@ -470,6 +481,36 @@ async function loadGeoData() {
 
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', () => {
+  // Charger les filtres sauvegardés
+  if (window.loadSavedFilters) {
+    window.loadSavedFilters();
+  }
+  
+  // Fonction pour obtenir toutes les patientes (pour initialiser les filtres)
+  function getAllPatientes() {
+    const STORAGE_KEY = 'mama_patientes_data';
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  }
+  
+  // Initialiser les filtres globaux
+  if (window.initGlobalFilters) {
+    const allPatientes = getAllPatientes();
+    window.initGlobalFilters(allPatientes);
+  }
+  
+  // Écouter les changements de filtres globaux
+  window.addEventListener('filtersChanged', () => {
+    loadGeoData();
+  });
+  
   // Attendre que Leaflet soit chargé
   if (typeof L === 'undefined') {
     setTimeout(() => {
@@ -479,10 +520,20 @@ document.addEventListener('DOMContentLoaded', () => {
     loadGeoData();
   }
   
-  // Écouter les changements de filtres
-  document.getElementById('filter-ville').addEventListener('change', filterPatientes);
-  document.getElementById('filter-risque').addEventListener('change', filterPatientes);
-  document.getElementById('reset-map').addEventListener('click', resetFilters);
+  // Écouter les changements de filtres locaux
+  const villeFilter = document.getElementById('filter-ville');
+  const risqueFilter = document.getElementById('filter-risque');
+  const resetBtn = document.getElementById('reset-map');
+  
+  if (villeFilter) {
+    villeFilter.addEventListener('change', filterPatientes);
+  }
+  if (risqueFilter) {
+    risqueFilter.addEventListener('change', filterPatientes);
+  }
+  if (resetBtn) {
+    resetBtn.addEventListener('click', resetFilters);
+  }
 });
 
 // Exposer les fonctions globalement

@@ -814,3 +814,46 @@
   }
 }
 
+/* ============================================
+   STYLES RESPONSIVES POUR LES PROFILS ÉTENDUS
+   ============================================ */
+
+@media (max-width: 768px) {
+  .profile-extended-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .profile-info-block {
+    padding: 1rem;
+  }
+
+  .profile-info-title {
+    font-size: 1rem;
+  }
+
+  .btn-edit-profile {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .btn-edit-profile span:last-child {
+    display: none;
+  }
+
+  .modal-large {
+    max-width: 95%;
+    margin: 1rem;
+  }
+
+  .card-header-with-icon {
+    flex-wrap: wrap;
+  }
+
+  .card-header-with-icon .btn-edit-profile {
+    margin-top: 0.5rem;
+    width: 100%;
+    justify-content: center;
+  }
+}
+

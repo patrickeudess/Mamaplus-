@@ -13,7 +13,10 @@ const DEFAULT_PATIENTES = [
     prenom: "Awa",
     nom: "Koffi",
     age: 28,
+    pays: "Côte d'Ivoire",
     ville: "Abidjan",
+    centre_sante: "CHU de Cocody",
+    periode: "month",
     distance_centre: 2.3,
     risque: "moyen",
     derniere_venue: "2024-03-15",
@@ -25,7 +28,10 @@ const DEFAULT_PATIENTES = [
     prenom: "Mariam",
     nom: "Kouadio",
     age: 19,
+    pays: "Côte d'Ivoire",
     ville: "Abidjan",
+    centre_sante: "CHU de Yopougon",
+    periode: "week",
     distance_centre: 5.1,
     risque: "élevé",
     derniere_venue: "2024-03-10",
@@ -37,7 +43,10 @@ const DEFAULT_PATIENTES = [
     prenom: "Fatou",
     nom: "Diallo",
     age: 32,
+    pays: "Côte d'Ivoire",
     ville: "Bouaké",
+    centre_sante: "CHU de Bouaké",
+    periode: "month",
     distance_centre: 1.8,
     risque: "faible",
     derniere_venue: "2024-03-20",
@@ -75,12 +84,34 @@ function addPatiente(patienteData) {
     throw new Error(`L'ID ${patienteData.id} est déjà utilisé par ${existingPatiente.prenom || ''} ${existingPatiente.nom || ''}`);
   }
   
+  // Calculer la prochaine CPN à partir de la liste générée
+  let prochaineCPN = null;
+  if (patienteData.cpn_list && patienteData.cpn_list.length > 0) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Trouver la première CPN future
+    const futureCPN = patienteData.cpn_list
+      .filter(cpn => {
+        const cpnDate = new Date(cpn.date_rdv);
+        cpnDate.setHours(0, 0, 0, 0);
+        return cpnDate >= today && cpn.statut === "planifie";
+      })
+      .sort((a, b) => new Date(a.date_rdv) - new Date(b.date_rdv))[0];
+    
+    if (futureCPN) {
+      prochaineCPN = futureCPN.date_rdv.split('T')[0]; // Format YYYY-MM-DD
+    }
+  }
+
   const newPatiente = {
     id: parseInt(patienteData.id),
     ...patienteData,
     risque: calculateRisk(patienteData),
     derniere_venue: null,
-    prochaine_cpn: null
+    prochaine_cpn: prochaineCPN,
+    // Stocker les CPN générées
+    cpn_list: patienteData.cpn_list || []
   };
   
   // Retirer l'ID des données pour éviter la duplication
@@ -194,6 +225,11 @@ function renderPatientes(patientes = null) {
   // Utiliser les patientes fournies ou récupérer depuis le stockage
   let allPatientes = patientes || getPatientes();
   
+  // Appliquer les filtres globaux si disponibles
+  if (window.filterPatientesByGlobalFilters) {
+    allPatientes = window.filterPatientesByGlobalFilters(allPatientes);
+  }
+  
   // Appliquer la recherche
   let filteredPatientes = [...allPatientes];
   
@@ -286,16 +322,19 @@ function renderPatientes(patientes = null) {
       <td>${formatDate(patiente.prochaine_cpn)}</td>
       <td>
         <div class="action-buttons">
-          <button class="action-btn call-btn" onclick="handleCall('${patiente.telephone || ""}')" title="Appeler" ${!patiente.telephone ? 'disabled' : ''}>
+          <button class="action-btn call-btn" onclick="handleCall('${patiente.telephone || ""}')" title="Appeler" style="background: #3b82f6; color: white;" ${!patiente.telephone ? 'disabled' : ''}>
             ${window.getIcon ? window.getIcon('phone', 20) : '📞'}
           </button>
-          <button class="action-btn edit-btn" onclick="handleEditPatiente(${patiente.id})" title="Modifier">
+          <button class="action-btn consultation-btn" onclick="handleAddConsultation(${patiente.id})" title="Ajouter consultation" style="background: #10b981; color: white;">
+            ${window.getIcon ? window.getIcon('medical', 20) : '🩺'}
+          </button>
+          <button class="action-btn edit-btn" onclick="handleEditPatiente(${patiente.id})" title="Modifier" style="background: #f59e0b; color: white;">
             ${window.getIcon ? window.getIcon('edit', 20) : '✏️'}
           </button>
-          <button class="action-btn view-btn" onclick="handleViewPatiente(${patiente.id})" title="Voir dossier">
+          <button class="action-btn view-btn" onclick="handleViewPatiente(${patiente.id})" title="Voir dossier" style="background: #8b5cf6; color: white;">
             ${window.getIcon ? window.getIcon('view', 20) : '👁️'}
           </button>
-          <button class="action-btn delete-btn" onclick="handleDeletePatiente(${patiente.id}, '${(patiente.prenom || '') + ' ' + (patiente.nom || '')}')" title="Supprimer">
+          <button class="action-btn delete-btn" onclick="handleDeletePatiente(${patiente.id}, '${(patiente.prenom || '') + ' ' + (patiente.nom || '')}')" title="Supprimer" style="background: #ef4444; color: white;">
             ${window.getIcon ? window.getIcon('delete', 20) : '🗑️'}
           </button>
         </div>
@@ -349,7 +388,10 @@ window.handleEditPatiente = function(patienteId) {
       const nomInput = document.querySelector("#patiente-nom");
       const prenomInput = document.querySelector("#patiente-prenom");
       const ageInput = document.querySelector("#patiente-age");
+      const paysInput = document.querySelector("#patiente-pays");
       const villeInput = document.querySelector("#patiente-ville");
+      const centreSanteInput = document.querySelector("#patiente-centre-sante");
+      const periodeInput = document.querySelector("#patiente-periode");
       const distanceInput = document.querySelector("#patiente-distance");
       const telephoneInput = document.querySelector("#patiente-telephone");
       
@@ -362,7 +404,23 @@ window.handleEditPatiente = function(patienteId) {
       if (nomInput) nomInput.value = patiente.nom || "";
       if (prenomInput) prenomInput.value = patiente.prenom || "";
       if (ageInput) ageInput.value = patiente.age || "";
-      if (villeInput) villeInput.value = patiente.ville || "";
+      if (paysInput && patiente.pays) {
+        paysInput.value = patiente.pays;
+        // Mettre à jour les villes selon le pays
+        if (window.updateCitiesDropdown) {
+          updateCitiesDropdown(patiente.pays);
+        }
+      }
+      if (villeInput) {
+        villeInput.value = patiente.ville || "";
+        // Mettre à jour les centres de santé selon la ville et le pays
+        if (window.updateHealthCentersDropdown) {
+          const pays = paysInput ? paysInput.value : patiente.pays;
+          updateHealthCentersDropdown(patiente.ville, pays);
+        }
+      }
+      if (centreSanteInput) centreSanteInput.value = patiente.centre_sante || "";
+      if (periodeInput) periodeInput.value = patiente.periode || "month";
       if (distanceInput) distanceInput.value = patiente.distance_centre || "";
       if (telephoneInput) {
         telephoneInput.value = patiente.telephone || "";
@@ -388,6 +446,173 @@ window.handleViewPatiente = function(patienteId) {
       window.toast.info(info, 5000);
     } else {
       alert(info);
+    }
+  }
+};
+
+// Fonction pour ouvrir le modal d'ajout de consultation
+window.handleAddConsultation = function(patienteId) {
+  const modal = document.querySelector("#add-consultation-modal");
+  const form = document.querySelector("#add-consultation-form");
+  const patienteIdInput = document.querySelector("#consultation-patiente-id");
+  const consultationMessage = document.querySelector("#consultation-message");
+  
+  if (!modal || !form || !patienteIdInput) return;
+  
+  const patientes = getPatientes();
+  const patiente = patientes.find(p => p.id === patienteId);
+  
+  if (!patiente) {
+    if (window.toast) {
+      window.toast.error("Patiente introuvable");
+    } else {
+      alert("Patiente introuvable");
+    }
+    return;
+  }
+  
+  // Préremplir le formulaire
+  patienteIdInput.value = patienteId;
+  form.reset();
+  patienteIdInput.value = patienteId; // Réinitialiser après reset
+  
+  // Définir la date/heure par défaut (maintenant)
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  const dateTimeLocal = now.toISOString().slice(0, 16);
+  const dateInput = document.querySelector("#consultation-date");
+  if (dateInput) {
+    dateInput.value = dateTimeLocal;
+  }
+  
+  // Réinitialiser le message
+  if (consultationMessage) {
+    consultationMessage.textContent = "";
+    consultationMessage.className = "message";
+  }
+  
+  // Afficher le modal
+  modal.classList.remove("hidden");
+  
+  // Mettre à jour le titre avec le nom de la patiente
+  const modalTitle = modal.querySelector("h2");
+  if (modalTitle) {
+    modalTitle.textContent = `Ajouter une consultation / Rendez-vous - ${patiente.prenom || ''} ${patiente.nom || ''}`.trim();
+  }
+};
+
+// Fonction pour fermer le modal de consultation
+window.closeConsultationModal = function() {
+  const modal = document.querySelector("#add-consultation-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+    const form = document.querySelector("#add-consultation-form");
+    if (form) {
+      form.reset();
+    }
+    const consultationMessage = document.querySelector("#consultation-message");
+    if (consultationMessage) {
+      consultationMessage.textContent = "";
+      consultationMessage.className = "message";
+    }
+  }
+};
+
+// Fonction pour gérer la soumission du formulaire de consultation
+window.handleConsultationSubmit = function(event) {
+  event.preventDefault();
+  
+  const form = event.target;
+  const consultationMessage = document.querySelector("#consultation-message");
+  const patienteIdInput = document.querySelector("#consultation-patiente-id");
+  
+  if (!patienteIdInput || !patienteIdInput.value) {
+    if (consultationMessage) {
+      consultationMessage.textContent = "Erreur : ID patiente manquant";
+      consultationMessage.className = "message error";
+    }
+    return;
+  }
+  
+  const patienteId = parseInt(patienteIdInput.value);
+  const patientes = getPatientes();
+  const patiente = patientes.find(p => p.id === patienteId);
+  
+  if (!patiente) {
+    if (consultationMessage) {
+      consultationMessage.textContent = "Patiente introuvable";
+      consultationMessage.className = "message error";
+    }
+    return;
+  }
+  
+  // Récupérer les données du formulaire
+  const consultationData = {
+    id: Date.now(), // ID unique basé sur le timestamp
+    patiente_id: patienteId,
+    type: document.querySelector("#consultation-type")?.value || "consultation",
+    date_consultation: document.querySelector("#consultation-date")?.value || new Date().toISOString(),
+    lieu: document.querySelector("#consultation-lieu")?.value || null,
+    poids: parseFloat(document.querySelector("#consultation-poids")?.value) || null,
+    temperature: parseFloat(document.querySelector("#consultation-temperature")?.value) || null,
+    tension_arterielle_systolique: parseInt(document.querySelector("#consultation-tas")?.value) || null,
+    tension_arterielle_diastolique: parseInt(document.querySelector("#consultation-tad")?.value) || null,
+    hauteur_uterine: parseFloat(document.querySelector("#consultation-hauteur-uterine")?.value) || null,
+    frequence_cardiaque_foetale: parseInt(document.querySelector("#consultation-fcf")?.value) || null,
+    examen_urinaire: document.querySelector("#consultation-examen-urinaire")?.value.trim() || null,
+    examen_sanguin: document.querySelector("#consultation-examen-sanguin")?.value.trim() || null,
+    echographie: document.querySelector("#consultation-echographie")?.value.trim() || null,
+    diagnostic: document.querySelector("#consultation-diagnostic")?.value.trim() || null,
+    traitement: document.querySelector("#consultation-traitement")?.value.trim() || null,
+    recommandations: document.querySelector("#consultation-recommandations")?.value.trim() || null,
+    notes: document.querySelector("#consultation-notes")?.value.trim() || null,
+    created_at: new Date().toISOString(),
+    data_source: "validated_by_professional"
+  };
+  
+  // Validation minimale
+  if (!consultationData.date_consultation) {
+    if (consultationMessage) {
+      consultationMessage.textContent = "La date et l'heure sont obligatoires";
+      consultationMessage.className = "message error";
+    }
+    return;
+  }
+  
+  try {
+    // Ajouter la consultation à la liste des consultations de la patiente
+    if (!patiente.consultations) {
+      patiente.consultations = [];
+    }
+    patiente.consultations.push(consultationData);
+    
+    // Mettre à jour la dernière venue
+    const consultationDate = new Date(consultationData.date_consultation);
+    patiente.derniere_venue = consultationDate.toISOString().split('T')[0];
+    
+    // Sauvegarder
+    updatePatiente(patienteId, patiente);
+    
+    if (consultationMessage) {
+      consultationMessage.textContent = "Consultation enregistrée avec succès !";
+      consultationMessage.className = "message success";
+    }
+    
+    if (window.toast) {
+      window.toast.success(`Consultation enregistrée pour ${patiente.prenom || ''} ${patiente.nom || ''}`);
+    }
+    
+    // Fermer le modal après 1.5 secondes
+    setTimeout(() => {
+      window.closeConsultationModal();
+      renderPatientes(); // Rafraîchir la liste
+    }, 1500);
+    
+  } catch (error) {
+    console.error("Erreur lors de l'enregistrement de la consultation:", error);
+    if (consultationMessage) {
+      consultationMessage.textContent = "Erreur lors de l'enregistrement : " + error.message;
+      consultationMessage.className = "message error";
     }
   }
 };
@@ -419,6 +644,70 @@ window.handleDeletePatiente = async function(patienteId, patienteName) {
   }
 };
 
+// Fonction pour mettre à jour le dropdown des centres de santé selon la ville et le pays
+function updateHealthCentersDropdown(ville, pays = null) {
+  const centreSanteSelect = document.querySelector("#patiente-centre-sante");
+  if (!centreSanteSelect) return;
+  
+  // Vider les options existantes sauf la première
+  centreSanteSelect.innerHTML = '<option value="">Choisir un centre de santé...</option>';
+  
+  if (!ville || !window.getHealthCentersByCity) {
+    return;
+  }
+  
+  // Si le pays n'est pas fourni, essayer de le récupérer depuis le formulaire
+  if (!pays) {
+    const paysSelect = document.querySelector("#patiente-pays");
+    if (paysSelect) {
+      pays = paysSelect.value;
+    }
+  }
+  
+  const centers = window.getHealthCentersByCity(ville, pays);
+  if (centers && centers.length > 0) {
+    centers.forEach(centre => {
+      const option = document.createElement('option');
+      option.value = centre;
+      option.textContent = centre;
+      centreSanteSelect.appendChild(option);
+    });
+  } else {
+    // Si aucun centre trouvé, permettre la saisie manuelle
+    const option = document.createElement('option');
+    option.value = "";
+    option.textContent = "Aucun centre disponible - Saisir manuellement";
+    centreSanteSelect.appendChild(option);
+  }
+}
+
+// Fonction pour mettre à jour les villes selon le pays sélectionné
+function updateCitiesDropdown(pays) {
+  const villeSelect = document.querySelector("#patiente-ville");
+  if (!villeSelect || !window.getCitiesByCountry) return;
+  
+  // Vider les options existantes sauf la première
+  villeSelect.innerHTML = '<option value="">Choisir une ville...</option>';
+  
+  if (!pays) {
+    return;
+  }
+  
+  const villes = window.getCitiesByCountry(pays);
+  if (villes && villes.length > 0) {
+    villes.forEach(ville => {
+      const option = document.createElement('option');
+      option.value = ville;
+      option.textContent = ville;
+      villeSelect.appendChild(option);
+    });
+  }
+}
+
+// Exposer les fonctions globalement
+window.updateHealthCentersDropdown = updateHealthCentersDropdown;
+window.updateCitiesDropdown = updateCitiesDropdown;
+
 // Fonction pour gérer l'ajout/modification
 window.handleAddPatienteSubmit = function(event) {
   event.preventDefault();
@@ -443,17 +732,40 @@ window.handleAddPatienteSubmit = function(event) {
     return;
   }
   
+  // Récupérer les données du formulaire
+  const datePremiereCPN = document.querySelector("#patiente-premiere-cpn")?.value;
+  const semaineGrossesse = parseInt(document.querySelector("#patiente-semaine-grossesse")?.value) || null;
+  const nombreCPN = parseInt(document.querySelector("#patiente-nombre-cpn")?.value) || 4;
+  const proReferent = document.querySelector("#patiente-pro-referent")?.value || "";
+
   const formData = {
     id: editId ? parseInt(editId) : patienteId, // Utiliser l'ID existant en modification, nouveau ID en ajout
     prenom: document.querySelector("#patiente-prenom")?.value || "",
     nom: document.querySelector("#patiente-nom")?.value || "",
     age: parseInt(document.querySelector("#patiente-age")?.value) || 0,
+    pays: document.querySelector("#patiente-pays")?.value || "",
     ville: document.querySelector("#patiente-ville")?.value || "",
+    centre_sante: document.querySelector("#patiente-centre-sante")?.value || "",
+    periode: document.querySelector("#patiente-periode")?.value || "month",
     distance_centre: parseFloat(document.querySelector("#patiente-distance")?.value) || 0,
     telephone: document.querySelector("#patiente-telephone")?.value || "",
     niveau_instruction: document.querySelector("#patiente-niveau-instruction")?.value || "",
-    moyen_transport: document.querySelector("#patiente-transport")?.value || ""
+    moyen_transport: document.querySelector("#patiente-transport")?.value || "",
+    pro_referent: proReferent,
+    // Données pour génération CPN
+    date_premiere_cpn: datePremiereCPN,
+    semaine_grossesse: semaineGrossesse,
+    nombre_cpn: nombreCPN,
+    // Source des données : validées par professionnel
+    data_source: "validated_by_professional"
   };
+  
+  // Générer les CPN si les données sont fournies
+  let cpnList = [];
+  if (datePremiereCPN && semaineGrossesse && window.generateCPNCalendar) {
+    cpnList = window.generateCPNCalendar(datePremiereCPN, semaineGrossesse, nombreCPN);
+    formData.cpn_list = cpnList;
+  }
   
   try {
     if (editId) {
@@ -569,7 +881,12 @@ window.closeAddPatienteModal = function() {
 
 // Fonction pour calculer et afficher les indicateurs de suivi
 function calculateDashboardStats() {
-  const patientes = getPatientes();
+  let patientes = getPatientes();
+  
+  // Appliquer les filtres globaux si disponibles
+  if (window.filterPatientesByGlobalFilters) {
+    patientes = window.filterPatientesByGlobalFilters(patientes);
+  }
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
@@ -658,16 +975,26 @@ function renderDashboardStats() {
         <div class="stat-label" style="color: rgba(255,255,255,0.9); font-size: 0.7rem; font-weight: 500; line-height: 1.2;">Total patientes</div>
       </div>
       
-      <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0;">
+      <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0; position: relative;">
         <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">${window.getIcon ? window.getIcon('risk-high', 28, '#ef4444') : '🔴'}</div>
         <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.1rem;">${stats.risqueEleve}</div>
         <div class="stat-label" style="color: rgba(255,255,255,0.9); font-size: 0.7rem; font-weight: 500; line-height: 1.2;">Risque élevé</div>
+        ${window.getRiskEvolutionData && window.createSparkline ? `
+          <div style="position: absolute; bottom: 0.5rem; right: 0.5rem; opacity: 0.7;">
+            ${window.createSparkline(window.getRiskEvolutionData(getPatientes()), 60, 20, 'rgba(255,255,255,0.9)')}
+          </div>
+        ` : ''}
       </div>
       
-      <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0;">
+      <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0; position: relative;">
         <div class="stat-icon" style="font-size: 1.25rem; margin-bottom: 0.2rem;">${window.getIcon ? window.getIcon('warning', 28, '#f59e0b') : '⚠️'}</div>
         <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 0.1rem;">${stats.cpnRetard}</div>
         <div class="stat-label" style="color: rgba(255,255,255,0.9); font-size: 0.7rem; font-weight: 500; line-height: 1.2;">CPN en retard</div>
+        ${window.getCPNDelayedByMonth && window.createBarChart ? `
+          <div style="position: absolute; bottom: 0.5rem; right: 0.5rem; opacity: 0.7;">
+            ${window.createBarChart(window.getCPNDelayedByMonth(getPatientes()), 60, 20, 'rgba(255,255,255,0.9)')}
+          </div>
+        ` : ''}
       </div>
       
       <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 0;">
@@ -717,7 +1044,12 @@ window.renderStatsPage = function() {
   if (!statsContent) return;
   
   try {
-    const patientes = getPatientes();
+    let patientes = getPatientes();
+    
+    // Appliquer les filtres globaux si disponibles
+    if (window.filterPatientesByGlobalFilters) {
+      patientes = window.filterPatientesByGlobalFilters(patientes);
+    }
     const stats = calculateDashboardStats();
     const today = new Date();
     
@@ -910,7 +1242,12 @@ window.renderPerformancePage = function() {
   if (!performanceContent) return;
   
   try {
-    const patientes = getPatientes();
+    let patientes = getPatientes();
+    
+    // Appliquer les filtres globaux si disponibles
+    if (window.filterPatientesByGlobalFilters) {
+      patientes = window.filterPatientesByGlobalFilters(patientes);
+    }
     const stats = calculateDashboardStats();
     const totalPatientes = patientes.length;
     
@@ -1072,6 +1409,16 @@ window.exportReport = function(format) {
 
 // Initialisation au chargement de la page
 document.addEventListener("DOMContentLoaded", () => {
+  // Afficher l'alerte critique
+  if (window.renderCriticalAlert) {
+    window.renderCriticalAlert(getPatientes());
+  }
+  
+  // Initialiser les filtres globaux du tableau de bord
+  if (window.initGlobalFilters) {
+    window.initGlobalFilters(getPatientes());
+  }
+  
   // Afficher les indicateurs de suivi (si on est sur le tableau de bord)
   renderDashboardStats();
   
@@ -1141,6 +1488,35 @@ document.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", handleAddPatienteSubmit);
   }
   
+  // Gérer le changement de pays pour mettre à jour les villes
+  const paysSelect = document.querySelector("#patiente-pays");
+  if (paysSelect && window.getCitiesByCountry) {
+    // Initialiser les villes si un pays est déjà sélectionné (par défaut)
+    if (paysSelect.value) {
+      updateCitiesDropdown(paysSelect.value);
+    }
+    
+    paysSelect.addEventListener("change", (e) => {
+      const selectedPays = e.target.value;
+      updateCitiesDropdown(selectedPays);
+      // Réinitialiser le centre de santé
+      const centreSanteSelect = document.querySelector("#patiente-centre-sante");
+      if (centreSanteSelect) {
+        centreSanteSelect.innerHTML = '<option value="">Choisir un centre de santé...</option>';
+      }
+    });
+  }
+  
+  // Gérer le changement de ville pour mettre à jour les centres de santé
+  const villeSelect = document.querySelector("#patiente-ville");
+  if (villeSelect && window.getHealthCentersByCity) {
+    villeSelect.addEventListener("change", (e) => {
+      const selectedVille = e.target.value;
+      const selectedPays = paysSelect ? paysSelect.value : null;
+      updateHealthCentersDropdown(selectedVille, selectedPays);
+    });
+  }
+  
   // Configurer le bouton de fermeture du modal
   const closeBtn = document.querySelector("#close-modal-btn, #cancel-patiente-btn");
   if (closeBtn) {
@@ -1152,6 +1528,38 @@ document.addEventListener("DOMContentLoaded", () => {
     setInterval(() => {
       renderDashboardStats();
     }, 30000);
+  }
+  
+  // Afficher le nom d'utilisateur si disponible
+  const userName = document.getElementById("user-name");
+  if (userName && window.auth) {
+    const currentUser = window.auth.getCurrentUser();
+    if (currentUser) {
+      userName.textContent = currentUser.name || currentUser.phone;
+      const userInfo = document.getElementById("user-info");
+      if (userInfo) {
+        userInfo.classList.remove("hidden");
+      }
+    }
+  }
+  
+  // Gestion du bouton de déconnexion
+  const logoutBtn = document.getElementById("logout-button");
+  if (logoutBtn && window.auth) {
+    logoutBtn.addEventListener("click", () => {
+      if (window.confirmAction) {
+        window.confirmAction(
+          "Voulez-vous vraiment vous déconnecter ?",
+          () => {
+            window.auth.logout();
+          }
+        );
+      } else {
+        if (confirm("Voulez-vous vraiment vous déconnecter ?")) {
+          window.auth.logout();
+        }
+      }
+    });
   }
   
   console.log("✅ Version simplifiée chargée - Fonctionne sans serveur backend !");

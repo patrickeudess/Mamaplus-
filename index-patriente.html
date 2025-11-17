@@ -30,11 +30,14 @@
           <span class="card-icon">📝</span>
           <h2>Bienvenue sur MAMA+</h2>
         </div>
+        <div style="padding: 0 1.5rem; margin-top: -1rem; margin-bottom: 1rem;">
+          <p style="color: #6b7280; font-size: 0.9rem;">💡 <strong>Astuce:</strong> Activez le son en cliquant sur le bouton 🔊 en bas à droite pour entendre les instructions.</p>
+        </div>
         <div class="registration-content">
-          <p class="registration-intro">Pour commencer, veuillez remplir vos informations personnelles. Ces données permettront de générer votre tableau de bord personnalisé.</p>
+          <p class="registration-intro">Bonjour ! Pour commencer, remplissez ce formulaire avec vos informations. C'est simple et rapide. Si vous avez besoin d'aide, cliquez sur le bouton audio en bas à droite.</p>
           <form id="patiente-registration-form" class="registration-form">
             <div class="form-section">
-              <h3>Informations personnelles</h3>
+              <h3>Vos informations</h3>
               <div class="form-row">
                 <label>
                   Prénom <span class="required">*</span>
@@ -51,44 +54,46 @@
               </label>
               <div class="form-row">
                 <label>
-                  Gestité
-                  <input type="number" id="reg-gestite" min="1" value="1" placeholder="Nombre de grossesses" />
+                  Nombre de grossesses
+                  <input type="number" id="reg-gestite" min="1" value="1" placeholder="Combien de fois vous êtes tombée enceinte" />
+                  <small style="color: #6b7280; font-size: 0.875rem;">Y compris cette grossesse</small>
                 </label>
                 <label>
-                  Parité
-                  <input type="number" id="reg-parite" min="0" value="0" placeholder="Nombre d'enfants nés" />
+                  Nombre d'enfants nés
+                  <input type="number" id="reg-parite" min="0" value="0" placeholder="Combien d'enfants vous avez déjà eus" />
                 </label>
               </div>
               <label>
-                Niveau d'instruction
+                Niveau d'études
                 <select id="reg-niveau-instruction">
-                  <option value="">Sélectionner...</option>
-                  <option value="aucun">Aucun</option>
-                  <option value="primaire">Primaire</option>
-                  <option value="secondaire">Secondaire</option>
-                  <option value="superieur">Supérieur</option>
+                  <option value="">Choisir...</option>
+                  <option value="aucun">Pas d'école</option>
+                  <option value="primaire">École primaire</option>
+                  <option value="secondaire">École secondaire</option>
+                  <option value="superieur">Études supérieures</option>
                 </select>
               </label>
             </div>
 
             <div class="form-section">
-              <h3>Informations de grossesse</h3>
+              <h3>Votre grossesse</h3>
               <label>
-                Date des dernières règles <span class="required">*</span>
+                Date de vos dernières règles <span class="required">*</span>
                 <input type="date" id="reg-dernieres-regles" required />
+                <small style="color: #6b7280; font-size: 0.875rem;">Le premier jour de vos dernières règles</small>
               </label>
               <label>
-                Date d'accouchement prévue
+                Date prévue pour l'accouchement
                 <input type="date" id="reg-accouchement-prevue" />
-                <small>Si vous ne connaissez pas cette date, elle sera calculée automatiquement</small>
+                <small style="color: #6b7280; font-size: 0.875rem;">Si vous ne connaissez pas cette date, elle sera calculée automatiquement</small>
               </label>
             </div>
 
             <div class="form-section">
-              <h3>Localisation</h3>
+              <h3>Où vous habitez</h3>
               <label>
                 Ville
-                <input type="text" id="reg-ville" placeholder="Ex: Bamako" />
+                <input type="text" id="reg-ville" placeholder="Exemple: Abidjan" />
               </label>
               <label>
                 Adresse
@@ -96,37 +101,37 @@
               </label>
               <div class="form-row">
                 <label>
-                  Distance au centre de santé (km)
-                  <input type="number" id="reg-distance" step="0.1" min="0" placeholder="Ex: 2.5" />
+                  Distance du centre de santé (en kilomètres)
+                  <input type="number" id="reg-distance" step="0.1" min="0" placeholder="Exemple: 2.5" />
                 </label>
                 <label>
-                  Moyen de transport
+                  Comment vous vous déplacez
                   <select id="reg-transport">
-                    <option value="">Sélectionner...</option>
+                    <option value="">Choisir...</option>
                     <option value="pieds">À pied</option>
                     <option value="velo">À vélo</option>
                     <option value="moto">En moto</option>
                     <option value="voiture">En voiture</option>
-                    <option value="transport_public">Transport public</option>
+                    <option value="transport_public">Bus ou taxi</option>
                   </select>
                 </label>
               </div>
             </div>
 
             <div class="form-section">
-              <h3>Informations médicales (optionnel)</h3>
+              <h3>Votre santé (vous pouvez laisser vide si vous voulez)</h3>
               <label>
-                Antécédents médicaux
-                <textarea id="reg-antecedents-medicaux" rows="3" placeholder="Maladies chroniques, allergies, etc."></textarea>
+                Maladies passées ou actuelles
+                <textarea id="reg-antecedents-medicaux" rows="3" placeholder="Écrivez les maladies que vous avez eues ou avez actuellement"></textarea>
               </label>
               <label>
-                Antécédents obstétricaux
-                <textarea id="reg-antecedents-obstetricaux" rows="3" placeholder="Complications lors de grossesses précédentes, etc."></textarea>
+                Problèmes lors des grossesses passées
+                <textarea id="reg-antecedents-obstetricaux" rows="3" placeholder="Écrivez s'il y a eu des problèmes lors de vos grossesses précédentes"></textarea>
               </label>
             </div>
 
             <div class="form-actions">
-              <button type="submit" class="btn-primary">Créer mon profil</button>
+              <button type="submit" class="btn-primary">Enregistrer mes informations</button>
             </div>
             <div id="registration-message" class="message"></div>
           </form>
@@ -150,19 +155,23 @@
               <span class="separator" id="transport-separator" style="display: none;">•</span>
               <span id="profile-transport" style="display: none;"></span>
             </div>
-        </div>
+          </div>
         </div>
       </section>
 
-      <!-- Section Rappels -->
-      <section class="card reminders-card" id="reminders-card" style="margin-bottom: 2rem;">
+      <!-- Mini carte interactive -->
+      <section class="card" style="margin-bottom: 1.5rem;">
         <div class="card-header-with-icon">
-          <span class="card-icon">📅</span>
-          <h2>Mes prochains rendez-vous</h2>
+          <span class="card-icon">📍</span>
+          <h2>Localisation</h2>
         </div>
-        <div id="reminders-content" class="loading-state">
-          <div class="spinner"></div>
-          <p>Chargement...</p>
+        <div id="mini-map-container" style="height: 200px; border-radius: 0.5rem; overflow: hidden; background: #f3f4f6; position: relative;">
+          <div id="mini-map" style="width: 100%; height: 100%; position: relative;">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #6b7280;">
+              <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">🗺️</span>
+              <p style="margin: 0; font-size: 0.875rem;">Carte interactive</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -232,6 +241,8 @@
       <small>Prototype MAMA+ – Amélioration du suivi prénatal</small>
     </footer>
 
+    <!-- Système de lecture audio -->
+    <script src="utils/audio-helper.js"></script>
     <!-- Système d'icônes -->
     <script src="utils/icons.js"></script>
     <script>
@@ -250,8 +261,18 @@
         }
       });
     </script>
+    <!-- Système d'authentification -->
+    <script src="utils/auth.js"></script>
+    <script>
+      // Protéger la page - vérifier la connexion
+      if (!window.protectPage || !window.protectPage('patiente')) {
+        // Redirection en cours
+      }
+    </script>
     <!-- Navigation mobile -->
     <script src="utils/mobile-nav.js" defer></script>
+    <!-- Améliorations interface patiente -->
+    <script src="utils/patiente-enhancements.js"></script>
     <script src="app-patriente.js" defer></script>
   </body>
 </html>

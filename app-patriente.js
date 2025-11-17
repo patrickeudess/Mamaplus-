@@ -19,7 +19,6 @@ const nextAppointmentContent = document.querySelector("#next-appointment-content
 const notificationsContent = document.querySelector("#notifications-content");
 const cpnContent = document.querySelector("#cpn-content");
 const dossierContent = document.querySelector("#dossier-content");
-const remindersContent = document.querySelector("#reminders-content");
 const symptomBtn = document.querySelector("#symptom-btn");
 const cancelAppointmentBtn = document.querySelector("#cancel-appointment-btn");
 const registrationFormCard = document.querySelector("#registration-form-card");
@@ -230,7 +229,8 @@ function calculatePregnancyWeek(dateDernieresRegles, dateAccouchementPrevue) {
 function renderProfile(patiente) {
   if (!patiente) return;
   
-  const nom = `${patiente.prenom || ""} ${patiente.nom || ""}`.trim() || "Patiente";
+  // Utiliser "mama+" comme nom pour la démonstration
+  const nom = "mama+";
   const age = patiente.age ? `${patiente.age} ans` : "";
   const dossier = patiente.id ? `Dossier #${patiente.id}` : "";
   
@@ -240,6 +240,7 @@ function renderProfile(patiente) {
   );
   const semaineText = semaine !== null ? `Semaine ${semaine} de grossesse` : "Semaine non calculée";
   
+  // Afficher "mama+" pour la démonstration
   if (profileName) profileName.textContent = nom;
   if (profileAge) profileAge.textContent = age;
   if (profileDossier) profileDossier.textContent = dossier;
@@ -275,16 +276,21 @@ function renderProfile(patiente) {
 }
 
 function renderCPN(cpnList) {
+  if (!cpnContent) return;
+  
   if (!cpnList || cpnList.length === 0) {
     cpnContent.innerHTML = `
       <div class="empty-state">
         <span class="empty-icon">📅</span>
         <p>Aucun rendez-vous CPN programmé pour le moment.</p>
-        <small>Vos prochains rendez-vous apparaîtront ici.</small>
+        <small>Vos prochains rendez-vous apparaîtront ici une fois planifiés par votre professionnel de santé.</small>
       </div>
     `;
     return;
   }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const cpnHTML = cpnList
     .map((cpn) => {
@@ -292,11 +298,23 @@ function renderCPN(cpnList) {
       const statutClass = cpn.statut === "complete" ? "statut-complete" : 
                          cpn.statut === "confirme" ? "statut-confirme" : 
                          cpn.statut === "manque" ? "statut-manque" : "statut-planifie";
-      const isUpcoming = new Date(cpn.date_rdv) > new Date();
-      const isToday = date.toDateString() === new Date().toDateString();
+      const isUpcoming = date > today;
+      const isToday = date.toDateString() === today.toDateString();
+      const isPast = date < today;
+      
+      // Calculer les jours jusqu'à la CPN
+      const daysUntil = Math.ceil((date - today) / (1000 * 60 * 60 * 24));
+      let reminderBadge = '';
+      if (isPast) {
+        reminderBadge = '<span class="reminder-badge past">✓ Passée</span>';
+      } else if (isToday) {
+        reminderBadge = '<span class="reminder-badge today">⚠️ Aujourd\'hui</span>';
+      } else if (daysUntil <= 7) {
+        reminderBadge = `<span class="reminder-badge upcoming">⏰ Dans ${daysUntil} jour${daysUntil > 1 ? 's' : ''}</span>`;
+      }
       
       return `
-        <div class="cpn-item-enhanced ${statutClass} ${isUpcoming ? 'upcoming' : ''} ${isToday ? 'today' : ''}">
+        <div class="cpn-item-enhanced ${statutClass} ${isUpcoming ? 'upcoming' : ''} ${isToday ? 'today' : ''} ${isPast ? 'past' : ''}">
           <div class="cpn-item-header">
             <div class="cpn-number-badge">CPN ${cpn.numero_cpn}</div>
             <span class="cpn-statut-badge ${statutClass}">${cpn.statut}</span>
@@ -316,6 +334,7 @@ function renderCPN(cpnList) {
           })}</p>
             </div>
           </div>
+          ${reminderBadge ? `<div class="cpn-reminder">${reminderBadge}</div>` : ""}
           ${cpn.notes ? `<div class="cpn-notes"><p>${cpn.notes}</p></div>` : ""}
         </div>
       `;
@@ -330,25 +349,54 @@ function renderDossier(dossier) {
   const consultations = dossier.consultations && dossier.consultations.length > 0
     ? dossier.consultations
     .map(
-      (c) => `
-            <div class="dossier-item">
-              <div class="item-date">${new Date(c.date_consultation).toLocaleDateString("fr-FR", {
+      (c) => {
+        const date = new Date(c.date_consultation || c.created_at);
+        const isValidated = c.data_source === "validated_by_professional";
+        const sourceBadge = isValidated 
+          ? '<span class="data-source-badge data-source-validated">✓ Validé par professionnel</span>'
+          : '<span class="data-source-badge data-source-auto-declared">⚠ Auto-déclaré</span>';
+        const itemClass = isValidated ? "item-validated" : "item-auto-declared";
+        
+        const typeLabels = {
+          "consultation": "Consultation prénatale",
+          "suivi": "Suivi médical",
+          "controle": "Contrôle",
+          "urgence": "Urgence",
+          "autre": "Autre rendez-vous"
+        };
+        const typeLabel = typeLabels[c.type] || c.type || "Consultation";
+        
+        return `
+            <div class="dossier-item ${itemClass}">
+              <div class="item-date">${date.toLocaleDateString("fr-FR", {
                 weekday: "short",
                 year: "numeric",
                 month: "short",
                 day: "numeric"
-              })}</div>
+              })} ${date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</div>
               <div class="item-content">
-                <div class="item-metrics">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                  <strong>${typeLabel}</strong>
+                  ${sourceBadge}
+                </div>
+                ${c.lieu ? `<p style="color: #6b7280; font-size: 0.875rem; margin: 0.25rem 0;"><span>📍</span> ${c.lieu}</p>` : ""}
+                <div class="item-metrics" style="margin-top: 0.5rem;">
                   ${c.poids ? `<span class="metric"><strong>Poids:</strong> ${c.poids} kg</span>` : ""}
                   ${c.tension_arterielle_systolique ? `<span class="metric"><strong>TA:</strong> ${c.tension_arterielle_systolique}/${c.tension_arterielle_diastolique || "–"}</span>` : ""}
+                  ${c.temperature ? `<span class="metric"><strong>Température:</strong> ${c.temperature} °C</span>` : ""}
+                  ${c.hauteur_uterine ? `<span class="metric"><strong>Hauteur utérine:</strong> ${c.hauteur_uterine} cm</span>` : ""}
+                  ${c.frequence_cardiaque_foetale ? `<span class="metric"><strong>FCF:</strong> ${c.frequence_cardiaque_foetale} bpm</span>` : ""}
                 </div>
-                ${c.notes ? `<p class="item-notes">${c.notes}</p>` : ""}
+                ${c.diagnostic ? `<p style="margin-top: 0.5rem;"><strong>Diagnostic:</strong> ${c.diagnostic}</p>` : ""}
+                ${c.traitement ? `<p style="margin-top: 0.5rem;"><strong>Traitement:</strong> ${c.traitement}</p>` : ""}
+                ${c.recommandations ? `<p style="margin-top: 0.5rem; color: #2563eb;"><strong>💡 Recommandations:</strong> ${c.recommandations}</p>` : ""}
+                ${c.notes ? `<p class="item-notes" style="margin-top: 0.5rem;">${c.notes}</p>` : ""}
               </div>
             </div>
-          `
-        )
-        .join("")
+          `;
+      }
+    )
+    .join("")
     : '<div class="empty-state-small"><p>Aucune consultation enregistrée.</p></div>';
 
   const vaccinations = dossier.vaccinations && dossier.vaccinations.length > 0
@@ -604,149 +652,6 @@ function renderNextAppointment(cpnList, patiente) {
   `;
 }
 
-function renderReminders(cpnList, consultations, vaccinations) {
-  const remindersEl = remindersContent || document.getElementById("reminders-content");
-  if (!remindersEl) return;
-  
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  const reminders = [];
-  
-  // Prochaine consultation (consultations médicales)
-  if (consultations && consultations.length > 0) {
-    const upcomingConsultation = consultations
-      .filter(c => {
-        const date = new Date(c.date_consultation);
-        date.setHours(0, 0, 0, 0);
-        return date >= now;
-      })
-      .sort((a, b) => new Date(a.date_consultation) - new Date(b.date_consultation))[0];
-    
-    if (upcomingConsultation) {
-      const date = new Date(upcomingConsultation.date_consultation);
-      const daysUntil = Math.ceil((date - now) / (1000 * 60 * 60 * 24));
-      let dateLabel = "";
-      if (daysUntil === 0) dateLabel = "Aujourd'hui";
-      else if (daysUntil === 1) dateLabel = "Demain";
-      else if (daysUntil <= 7) dateLabel = `Dans ${daysUntil} jours`;
-      else dateLabel = date.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-      
-      reminders.push({
-        type: "consultation",
-        icon: "🩺",
-        title: "Prochaine consultation",
-        date: date,
-        dateLabel: dateLabel,
-        time: date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
-      });
-    }
-  }
-  
-  // Prochaine CPN
-  if (cpnList && cpnList.length > 0) {
-    const upcomingCpn = cpnList
-      .filter(cpn => {
-        const date = new Date(cpn.date_rdv);
-        date.setHours(0, 0, 0, 0);
-        return date >= now && cpn.statut !== "complete";
-      })
-      .sort((a, b) => new Date(a.date_rdv) - new Date(b.date_rdv))[0];
-    
-    if (upcomingCpn) {
-      const date = new Date(upcomingCpn.date_rdv);
-      const daysUntil = Math.ceil((date - now) / (1000 * 60 * 60 * 24));
-      let dateLabel = "";
-      if (daysUntil === 0) dateLabel = "Aujourd'hui";
-      else if (daysUntil === 1) dateLabel = "Demain";
-      else if (daysUntil <= 7) dateLabel = `Dans ${daysUntil} jours`;
-      else dateLabel = date.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-      
-      reminders.push({
-        type: "cpn",
-        icon: "📅",
-        title: `CPN ${upcomingCpn.numero_cpn}`,
-        date: date,
-        dateLabel: dateLabel,
-        time: date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
-      });
-    }
-  }
-  
-  // Prochaines vaccinations
-  if (vaccinations && vaccinations.length > 0) {
-    // Vaccinations à venir (selon le calendrier de vaccination prénatale)
-    // Pour l'instant, on affiche les vaccinations récentes ou à venir
-    const upcomingVaccinations = vaccinations
-      .filter(v => {
-        if (!v.date_vaccination) return false;
-        const date = new Date(v.date_vaccination);
-        date.setHours(0, 0, 0, 0);
-        return date >= now;
-      })
-      .sort((a, b) => new Date(a.date_vaccination) - new Date(b.date_vaccination));
-    
-    upcomingVaccinations.forEach(vaccination => {
-      const date = new Date(vaccination.date_vaccination);
-      const daysUntil = Math.ceil((date - now) / (1000 * 60 * 60 * 24));
-      let dateLabel = "";
-      if (daysUntil === 0) dateLabel = "Aujourd'hui";
-      else if (daysUntil === 1) dateLabel = "Demain";
-      else if (daysUntil <= 7) dateLabel = `Dans ${daysUntil} jours`;
-      else dateLabel = date.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-      
-      reminders.push({
-        type: "vaccination",
-        icon: "💉",
-        title: `Vaccination ${vaccination.type_vaccin || "prévue"}`,
-        date: date,
-        dateLabel: dateLabel
-      });
-    });
-  }
-  
-  // Trier par date
-  reminders.sort((a, b) => a.date - b.date);
-  
-  if (reminders.length === 0) {
-    remindersEl.innerHTML = `
-      <div class="empty-state">
-        <span class="empty-icon">📅</span>
-        <p>Aucun rendez-vous programmé pour le moment.</p>
-        <small>Vos prochains rendez-vous apparaîtront ici une fois planifiés.</small>
-      </div>
-    `;
-    return;
-  }
-  
-  const remindersHTML = reminders.map(reminder => {
-    const dateStr = reminder.date.toLocaleDateString("fr-FR", {
-      weekday: "short",
-      day: "numeric",
-      month: "short"
-    });
-    
-    return `
-      <div class="reminder-item" data-type="${reminder.type}">
-        <div class="reminder-icon">${reminder.icon}</div>
-        <div class="reminder-content">
-          <div class="reminder-title">${reminder.title}</div>
-          <div class="reminder-date">
-            <span class="reminder-date-label">${reminder.dateLabel}</span>
-            <span class="reminder-date-full">${dateStr}</span>
-            ${reminder.time ? `<span class="reminder-time">${reminder.time}</span>` : ""}
-          </div>
-        </div>
-      </div>
-    `;
-  }).join("");
-  
-  remindersEl.innerHTML = `
-    <div class="reminders-list">
-      ${remindersHTML}
-    </div>
-  `;
-}
-
 function renderNotifications(cpnList, vaccinations) {
   if (!notificationsContent) return;
   
@@ -857,15 +762,37 @@ async function loadPatienteData() {
     // Charger les CPN
     let cpnList = [];
     try {
-      if (patienteId) {
-        // Charger les CPN de cette patiente spécifique
-        const allCpn = await fetchJSON("/cpn");
-        cpnList = allCpn.filter(cpn => cpn.patiente_id === patienteId);
+      // Priorité 1: CPN stockées dans les données de la patiente (générées automatiquement)
+      if (patienteData && patienteData.cpn_list && patienteData.cpn_list.length > 0) {
+        cpnList = patienteData.cpn_list.map(cpn => ({
+          id: cpn.numero_cpn || null,
+          numero_cpn: cpn.numero_cpn,
+          date_rdv: cpn.date_rdv,
+          statut: cpn.statut || "planifie",
+          notes: cpn.notes || null,
+          patiente_id: patienteId || patienteData.id
+        }));
+      } else if (patienteId) {
+        // Priorité 2: Charger depuis l'API
+        try {
+          const allCpn = await fetchJSON("/cpn");
+          cpnList = allCpn.filter(cpn => cpn.patiente_id === patienteId);
+        } catch (apiError) {
+          console.warn("Impossible de charger les CPN depuis l'API:", apiError);
+        }
       } else {
-        // Charger toutes les CPN (pour la démo)
-        cpnList = await fetchJSON("/cpn");
+        // Priorité 3: Charger toutes les CPN (pour la démo)
+        try {
+          cpnList = await fetchJSON("/cpn");
+        } catch (apiError) {
+          console.warn("Impossible de charger les CPN depuis l'API:", apiError);
+        }
       }
-    renderCPN(cpnList);
+      
+      // Trier les CPN par date
+      cpnList.sort((a, b) => new Date(a.date_rdv) - new Date(b.date_rdv));
+      
+      renderCPN(cpnList);
     } catch (error) {
       console.error("Erreur lors du chargement des CPN:", error);
       const errorMsg = error.message || "Erreur de connexion";
@@ -883,7 +810,15 @@ async function loadPatienteData() {
     // Charger le dossier complet pour avoir consultations et vaccinations
     let consultations = [];
     let vaccinations = [];
-    if (patienteId) {
+    
+    // Priorité 1: Consultations stockées dans les données de la patiente (créées par le pro)
+    if (patienteData && patienteData.consultations && patienteData.consultations.length > 0) {
+      consultations = patienteData.consultations.map(consultation => ({
+        ...consultation,
+        date_consultation: consultation.date_consultation || consultation.created_at
+      }));
+    } else if (patienteId) {
+      // Priorité 2: Charger depuis l'API
       try {
         const dossier = await fetchJSON(`/patientes/${patienteId}/dossier`).catch(() => ({}));
         consultations = dossier.consultations || [];
@@ -893,8 +828,12 @@ async function loadPatienteData() {
       }
     }
     
-    // Afficher les rappels (prochaine consultation, CPN, vaccinations)
-    renderReminders(cpnList, consultations, vaccinations);
+    // Trier les consultations par date (plus récentes en premier)
+    consultations.sort((a, b) => {
+      const dateA = new Date(a.date_consultation || a.created_at);
+      const dateB = new Date(b.date_consultation || b.created_at);
+      return dateB - dateA; // Ordre décroissant
+    });
     
     // Afficher la prochaine consultation (pour compatibilité avec autres pages)
     renderNextAppointment(cpnList, patienteData);
@@ -902,18 +841,20 @@ async function loadPatienteData() {
     // Afficher les notifications (pour compatibilité avec autres pages)
     renderNotifications(cpnList, vaccinations);
     
-    // Afficher un aperçu du dossier (lien vers la page complète)
-    if (patienteId) {
-      try {
-        const dossier = await fetchJSON(`/patientes/${patienteId}/dossier`);
-        renderDossierPreview(dossier);
-      } catch (error) {
-        console.error("Erreur lors du chargement du dossier:", error);
-        renderDossierPreview(null);
-      }
-    } else {
-      renderDossierPreview(null);
+    // Initialiser la mini carte interactive
+    if (window.initMiniMap) {
+      window.initMiniMap(patienteData);
     }
+    
+    // Afficher un aperçu du dossier (lien vers la page complète)
+    // Construire le dossier avec les données disponibles
+    const dossier = {
+      consultations: consultations,
+      cpn: cpnList,
+      vaccinations: vaccinations,
+      patiente: patienteData
+    };
+    renderDossierPreview(dossier);
   } catch (error) {
     console.error("Erreur lors du chargement des données:", error);
     cpnContent.innerHTML = `
@@ -936,7 +877,7 @@ async function loadPatienteData() {
 function renderDossierPreview(dossier) {
   if (!dossierContent) return;
   
-  if (!dossier) {
+  if (!dossier || (!dossier.consultations && !dossier.cpn && !dossier.vaccinations)) {
     dossierContent.innerHTML = `
       <div class="dossier-preview">
         <p>Aucune donnée disponible pour le moment.</p>
@@ -948,9 +889,9 @@ function renderDossierPreview(dossier) {
     return;
   }
   
-  const consultationsCount = dossier.consultations?.length || 0;
-  const cpnCount = dossier.cpn?.length || 0;
-  const vaccinationsCount = dossier.vaccinations?.length || 0;
+  const consultationsCount = (dossier.consultations && dossier.consultations.length) || 0;
+  const cpnCount = (dossier.cpn && dossier.cpn.length) || 0;
+  const vaccinationsCount = (dossier.vaccinations && dossier.vaccinations.length) || 0;
   
       dossierContent.innerHTML = `
     <div class="dossier-preview">
@@ -1022,6 +963,7 @@ function loadSavedPatienteData() {
 function savePatienteData(data) {
   localStorage.setItem("mama_patiente_data", JSON.stringify(data));
 }
+
 
 // Afficher le formulaire d'inscription
 function showRegistrationForm() {
@@ -1120,8 +1062,34 @@ async function handleRegistrationSubmit(event) {
 
 async function bootstrap() {
   try {
-    // Mode sans authentification - accès direct
-    // Section user-info masquée - Mode développement supprimé
+    // Afficher le nom d'utilisateur si disponible
+    if (userName && window.auth) {
+      const currentUser = window.auth.getCurrentUser();
+      if (currentUser) {
+        userName.textContent = currentUser.name || currentUser.phone;
+        if (userInfo) {
+          userInfo.classList.remove("hidden");
+        }
+      }
+    }
+    
+    // Gestion du bouton de déconnexion
+    if (logoutButton && window.auth) {
+      logoutButton.addEventListener("click", () => {
+        if (window.confirmAction) {
+          window.confirmAction(
+            "Voulez-vous vraiment vous déconnecter ?",
+            () => {
+              window.auth.logout();
+            }
+          );
+        } else {
+          if (confirm("Voulez-vous vraiment vous déconnecter ?")) {
+            window.auth.logout();
+          }
+        }
+      });
+    }
     
     // Vérifier si les données de la patiente existent
     const savedData = loadSavedPatienteData();
@@ -1133,6 +1101,7 @@ async function bootstrap() {
       // Afficher le formulaire d'inscription
       showRegistrationForm();
     }
+    
   } catch (error) {
     console.error("Erreur lors du chargement:", error);
     // Afficher le formulaire en cas d'erreur
@@ -1203,7 +1172,6 @@ window.loadPatienteData = loadPatienteData;
 window.renderNextAppointment = renderNextAppointment;
 window.renderNotifications = renderNotifications;
 window.renderCPN = renderCPN;
-window.renderReminders = renderReminders;
 
 logoutButton.addEventListener("click", handleLogout);
 if (symptomBtn) symptomBtn.addEventListener("click", handleSymptom);

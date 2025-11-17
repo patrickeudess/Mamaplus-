@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from app import models
+from app.services.scheduler import setup_scheduled_jobs, stop_scheduler
 
 # Créer les tables
 Base.metadata.create_all(bind=engine)
@@ -32,6 +33,30 @@ app.include_router(vaccinations.router, prefix="/api/vaccinations", tags=["Vacci
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Tableau de bord"])
 app.include_router(chatbot.router, prefix="/api/chatbot", tags=["Chatbot"])
 app.include_router(prediction.router, prefix="/api/prediction", tags=["Prédictions"])
+
+# Importer le router du scheduler
+from app.api import scheduler as scheduler_router
+app.include_router(scheduler_router.router, prefix="/api/scheduler", tags=["Scheduler"])
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Démarre le scheduler au démarrage de l'application"""
+    try:
+        setup_scheduled_jobs()
+        print("✅ Scheduler de rappels automatiques démarré")
+    except Exception as e:
+        print(f"⚠️ Erreur lors du démarrage du scheduler: {e}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Arrête le scheduler à l'arrêt de l'application"""
+    try:
+        stop_scheduler()
+        print("✅ Scheduler arrêté")
+    except Exception as e:
+        print(f"⚠️ Erreur lors de l'arrêt du scheduler: {e}")
 
 
 @app.get("/")

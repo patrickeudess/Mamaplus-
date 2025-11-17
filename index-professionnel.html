@@ -16,14 +16,77 @@
       <h1>MAMA+ – Tableau de bord professionnel</h1>
       </div>
       <div id="auth-section" role="navigation">
-        <div id="user-info" class="hidden" aria-live="polite">
+        <div id="user-info" aria-live="polite">
           <span id="user-name" aria-label="Nom de l'utilisateur"></span>
-          <button id="logout-button" type="button" aria-label="Se déconnecter">Déconnexion</button>
+          <button id="logout-button" type="button" aria-label="Se déconnecter" class="btn-secondary" style="margin-left: 1rem; padding: 0.5rem 1rem;">Déconnexion</button>
         </div>
       </div>
     </header>
 
     <main role="main">
+      <!-- Alerte critique -->
+      <section id="critical-alert-section" class="critical-alert hidden" style="margin: 1rem 0; padding: 1rem; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #dc2626; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <span style="font-size: 1.5rem;">⚠️</span>
+          <div style="flex: 1;">
+            <strong style="color: #991b1b; font-size: 1rem; display: block; margin-bottom: 0.25rem;" id="critical-alert-text"></strong>
+            <button id="critical-alert-action" class="btn-primary" style="margin-top: 0.5rem; padding: 0.5rem 1rem; font-size: 0.875rem; background: #dc2626; border: none; color: white; border-radius: 0.375rem; cursor: pointer;">
+              Voir les patientes concernées
+            </button>
+          </div>
+          <button id="dismiss-alert" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #991b1b; padding: 0.25rem;">&times;</button>
+        </div>
+      </section>
+
+      <!-- Filtres globaux du tableau de bord -->
+      <section class="card" id="global-filters-section" style="margin-bottom: 1rem; padding: 1rem; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0;">
+        <div style="margin-bottom: 0.75rem;">
+          <h3 style="margin: 0; font-size: 1rem; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🔍</span>
+            <span>Filtres de contexte</span>
+          </h3>
+          <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; color: #64748b;">Filtrez les données selon votre zone d'intervention</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+          <label style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <span style="font-weight: 500; color: #374151; font-size: 0.875rem;">Pays:</span>
+            <select id="global-filter-pays" style="padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; background: white;">
+              <option value="all">Tous les pays</option>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <span style="font-weight: 500; color: #374151; font-size: 0.875rem;">Ville:</span>
+            <select id="global-filter-ville" style="padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; background: white;">
+              <option value="all">Toutes les villes</option>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <span style="font-weight: 500; color: #374151; font-size: 0.875rem;">Centre de santé:</span>
+            <select id="global-filter-centre" style="padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; background: white;">
+              <option value="all">Tous les centres</option>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <span style="font-weight: 500; color: #374151; font-size: 0.875rem;">Période:</span>
+            <select id="global-filter-periode" style="padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; background: white;">
+              <option value="week">Cette semaine</option>
+              <option value="month" selected>Ce mois</option>
+              <option value="quarter">Ce trimestre</option>
+              <option value="year">Cette année</option>
+              <option value="all">Toutes les périodes</option>
+            </select>
+          </label>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center; justify-content: flex-end; padding-top: 0.75rem; border-top: 1px solid #e2e8f0;">
+          <button id="reset-global-filters" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+            🔄 Réinitialiser
+          </button>
+          <div id="filter-summary" style="font-size: 0.875rem; color: #64748b; font-style: italic;">
+            <span id="filter-summary-text">Aucun filtre actif</span>
+          </div>
+        </div>
+      </section>
+
       <!-- Formulaire de profil professionnel -->
       <section class="card registration-form-card hidden" id="professional-profile-form-card">
         <div class="card-header-with-icon">
@@ -256,12 +319,39 @@
           <div class="form-section">
             <h3>Localisation</h3>
             <label>
-              Adresse
-              <input type="text" id="patiente-adresse" />
+              Pays <span class="required">*</span>
+              <select id="patiente-pays" required>
+                <option value="">Choisir un pays...</option>
+                <option value="Côte d'Ivoire" selected>Côte d'Ivoire</option>
+                <option value="Mali">Mali</option>
+                <option value="Burkina Faso">Burkina Faso</option>
+                <option value="Sénégal">Sénégal</option>
+                <option value="Guinée">Guinée</option>
+                <option value="Niger">Niger</option>
+                <option value="Bénin">Bénin</option>
+                <option value="Togo">Togo</option>
+                <option value="Ghana">Ghana</option>
+              </select>
             </label>
             <label>
-              Ville
-              <input type="text" id="patiente-ville" />
+              Ville <span class="required">*</span>
+              <select id="patiente-ville" required>
+                <option value="">Choisir une ville...</option>
+                <!-- Les options seront remplies dynamiquement selon le pays sélectionné -->
+              </select>
+              <small style="color: #6b7280; font-size: 0.875rem;">Sélectionnez d'abord le pays pour voir les villes disponibles</small>
+            </label>
+            <label>
+              Centre de santé <span class="required">*</span>
+              <select id="patiente-centre-sante" required>
+                <option value="">Choisir un centre de santé...</option>
+                <!-- Les options seront remplies dynamiquement selon la ville sélectionnée -->
+              </select>
+              <small style="color: #6b7280; font-size: 0.875rem;">Sélectionnez d'abord la ville pour voir les centres disponibles</small>
+            </label>
+            <label>
+              Adresse
+              <input type="text" id="patiente-adresse" />
             </label>
             <div class="form-row">
               <label>
@@ -280,6 +370,21 @@
                 </select>
               </label>
             </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Période de suivi</h3>
+            <label>
+              Période de suivi <span class="required">*</span>
+              <select id="patiente-periode" required>
+                <option value="">Choisir une période...</option>
+                <option value="week">Semaine</option>
+                <option value="month" selected>Mois</option>
+                <option value="quarter">Trimestre</option>
+                <option value="year">Année</option>
+              </select>
+              <small style="color: #6b7280; font-size: 0.875rem;">Période de suivi prénatal de la patiente</small>
+            </label>
           </div>
 
           <div class="form-section">
@@ -331,6 +436,14 @@
       <small>Prototype MAMA+ – Amélioration du suivi prénatal</small>
     </footer>
 
+    <!-- Système d'authentification -->
+    <script src="utils/auth.js"></script>
+    <script>
+      // Protéger la page - vérifier la connexion
+      if (!window.protectPage || !window.protectPage('professionnel')) {
+        // Redirection en cours
+      }
+    </script>
     <!-- Système d'icônes -->
     <script src="utils/icons.js"></script>
     <script>
@@ -362,6 +475,14 @@
     <!-- Navigation mobile -->
     <script src="utils/icons.js"></script>
     <script src="utils/mobile-nav.js" defer></script>
+    <!-- Utilitaires pour les micro-graphiques -->
+    <script src="utils/sparklines.js"></script>
+    <!-- Liste des centres de santé de Côte d'Ivoire -->
+    <script src="utils/health-centers-ci.js"></script>
+    <!-- Système de filtres globaux -->
+    <script src="utils/global-filters.js"></script>
+    <!-- Améliorations du tableau de bord -->
+    <script src="utils/dashboard-enhancements.js"></script>
     <!-- Version simplifiée - Fonctionne sans serveur backend -->
     <script src="app-professionnel-simple.js" defer></script>
     <!-- Version complète avec backend (décommenter si vous avez un serveur backend) -->

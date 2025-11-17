@@ -87,6 +87,10 @@
     <!-- Navigation mobile -->
     <script src="utils/icons.js"></script>
     <script src="utils/mobile-nav.js" defer></script>
+    <!-- Système de filtres globaux -->
+    <script src="utils/global-filters.js"></script>
+    <!-- Améliorations du tableau de bord -->
+    <script src="utils/dashboard-enhancements.js"></script>
     <script src="app-professionnel-simple.js" defer></script>
     <script>
       // Fonction pour basculer entre les onglets
@@ -142,6 +146,27 @@
       
       // Vérifier si on arrive depuis la page performance (via hash)
       document.addEventListener("DOMContentLoaded", () => {
+        // Charger les filtres sauvegardés
+        if (window.loadSavedFilters) {
+          window.loadSavedFilters();
+        }
+        
+        // Initialiser les filtres globaux
+        if (window.initGlobalFilters && window.getPatientes) {
+          const allPatientes = window.getPatientes();
+          window.initGlobalFilters(allPatientes);
+        }
+        
+        // Écouter les changements de filtres globaux
+        window.addEventListener('filtersChanged', () => {
+          if (window.renderStatsPage) {
+            window.renderStatsPage();
+          }
+          if (window.renderPerformancePage) {
+            window.renderPerformancePage();
+          }
+        });
+        
         // Vérifier l'URL pour voir si on doit afficher l'onglet performance
         if (window.location.hash === '#performance') {
           switchTab('performance');

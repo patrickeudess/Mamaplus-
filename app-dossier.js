@@ -158,7 +158,8 @@ function calculatePregnancyWeek(dateDernieresRegles, dateAccouchementPrevue) {
 function renderProfile(patiente) {
   if (!patiente) return;
   
-  const nom = `${patiente.prenom || ""} ${patiente.nom || ""}`.trim() || "Patiente";
+  // Utiliser "mama+" comme nom pour la démonstration
+  const nom = "mama+";
   const age = patiente.age ? `${patiente.age} ans` : "";
   const dossier = patiente.id ? `Dossier #${patiente.id}` : "";
   
@@ -168,6 +169,7 @@ function renderProfile(patiente) {
   );
   const semaineText = semaine !== null ? `Semaine ${semaine} de grossesse` : "Semaine non calculée";
   
+  // Afficher "mama+" pour la démonstration
   if (profileName) profileName.textContent = nom;
   if (profileAge) profileAge.textContent = age;
   if (profileDossier) profileDossier.textContent = dossier;
@@ -249,27 +251,38 @@ function renderDossier(dossier) {
     dossier.patiente?.date_accouchement_prevue
   ) || 0;
   
-  // Trier les consultations par date (plus récentes en premier)
-  const consultationsSorted = dossier.consultations && dossier.consultations.length > 0
-    ? [...dossier.consultations].sort((a, b) => new Date(b.date_consultation) - new Date(a.date_consultation))
+  // Trier les consultations médicales par date (plus récentes en premier)
+  // IMPORTANT: Utiliser uniquement dossier.consultations (pas les CPN)
+  const consultationsSorted = dossier.consultations && Array.isArray(dossier.consultations) && dossier.consultations.length > 0
+    ? [...dossier.consultations]
+        .filter(c => c && c.date_consultation) // Filtrer pour ne garder que les vraies consultations
+        .sort((a, b) => new Date(b.date_consultation) - new Date(a.date_consultation))
     : [];
   
-  const consultations = consultationsSorted.length > 0
+  // Rendre uniquement les consultations médicales (pas les CPN)
+  // Filtrer et mapper uniquement les consultations avec date_consultation (pas les CPN)
+  const consultationsHTML = consultationsSorted.length > 0
     ? consultationsSorted
-    .map(
-      (c) => {
-        const date = new Date(c.date_consultation);
-        // Formatage robuste de la date
-        const dayNames = ['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'];
-        const monthNames = ['JANVIER', 'FÉVRIER', 'MARS', 'AVRIL', 'MAI', 'JUIN',
-                           'JUILLET', 'AOÛT', 'SEPTEMBRE', 'OCTOBRE', 'NOVEMBRE', 'DÉCEMBRE'];
-        
-        const dayName = dayNames[date.getDay()] || 'JOUR';
-        const day = date.getDate();
-        const month = monthNames[date.getMonth()] || 'MOIS';
-        const year = date.getFullYear();
-        
-        return `
+        .map(
+          (c) => {
+            // Vérifier que c'est bien une consultation médicale (pas une CPN)
+            // Une consultation doit avoir date_consultation et ne doit PAS avoir numero_cpn
+            if (!c.date_consultation || c.numero_cpn || c.date_rdv) {
+              return null; // Ignorer si c'est une CPN ou si la date de consultation est manquante
+            }
+            
+            const date = new Date(c.date_consultation);
+            // Vérifier que la date est valide
+            if (isNaN(date.getTime())) {
+              return null; // Ignorer les dates invalides
+            }
+            
+            // Formatage robuste de la date
+            const dayNames = ['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'];
+            const monthNames = ['JANVIER', 'FÉVRIER', 'MARS', 'AVRIL', 'MAI', 'JUIN',
+                               'JUILLET', 'AOÛT', 'SEPTEMBRE', 'OCTOBRE', 'NOVEMBRE', 'DÉCEMBRE'];
+            
+            return `
             <div class="dossier-item consultation-item">
               <div class="item-icon-large consultation-icon">🩺</div>
               <div class="item-content-enhanced">
@@ -319,10 +332,19 @@ function renderDossier(dossier) {
               </div>
             </div>
           `;
-      }
-    )
-    .join("")
-    : '<div class="empty-state-small"><p>Aucune consultation enregistrée.</p></div>';
+          }
+        )
+        .filter(html => html !== null) // Supprimer les valeurs null
+        .join("")
+    : '';
+  
+  // Afficher le message vide si aucune consultation valide
+  const consultations = consultationsHTML || '<div class="empty-state-small"><p>Aucune consultation enregistrée.</p></div>';
+  
+  // Compter uniquement les consultations valides (pas les CPN)
+  const consultationsCount = consultationsSorted.filter(c => 
+    c && c.date_consultation && !c.numero_cpn && !c.date_rdv && !isNaN(new Date(c.date_consultation).getTime())
+  ).length;
 
   // Trier les vaccinations par date (plus récentes en premier)
   const vaccinationsSorted = dossier.vaccinations && dossier.vaccinations.length > 0
@@ -435,10 +457,10 @@ function renderDossier(dossier) {
           </div>
           <div class="section-title-wrapper">
             <h3 class="section-title">Consultations</h3>
-            <span class="section-count">${consultationsSorted.length}</span>
+            <span class="section-count">${consultationsCount}</span>
           </div>
         </div>
-        <div class="dossier-list-enhanced">${consultations}</div>
+        <div class="dossier-list-enhanced" id="consultations-list">${consultations}</div>
       </article>
       
       <!-- Section CPN : uniquement les rendez-vous CPN -->

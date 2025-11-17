@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <title>MAMA+ – Connexion</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles-icons.css" />
+    <link rel="stylesheet" href="styles-ux.css" />
+  </head>
+  <body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <h1>MAMA+</h1>
+          <p style="color: #6b7280; margin-top: 0.5rem;">Bienvenue ! Connectez-vous pour continuer</p>
+        </div>
+
+        <!-- Onglets Connexion / Inscription -->
+        <div class="login-tabs-wrapper">
+          <div class="login-tabs">
+            <button class="login-tab active" data-tab="login" id="tab-login" aria-selected="true" role="tab">
+              <span id="tab-login-icon" class="tab-icon"></span>
+              <span>Se connecter</span>
+            </button>
+            <button class="login-tab" data-tab="register" id="tab-register" aria-selected="false" role="tab">
+              <span id="tab-register-icon" class="tab-icon"></span>
+              <span>Créer un compte</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Formulaire de connexion -->
+        <div class="login-form-container" id="login-form-container" role="tabpanel" aria-labelledby="tab-login">
+          <form id="login-form" class="login-form">
+            <div class="login-form-grid">
+              <div class="form-group">
+                <label for="login-phone">
+                  Numéro de téléphone <span class="required">*</span>
+                </label>
+                <input 
+                  type="tel" 
+                  id="login-phone" 
+                  placeholder="Exemple: +2250700000000" 
+                  required 
+                  autocomplete="tel"
+                />
+                <small class="form-help-text">
+                  Le numéro que vous avez utilisé pour créer votre compte
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label for="login-password">
+                  Mot de passe <span class="required">*</span>
+                </label>
+                <input 
+                  type="password" 
+                  id="login-password" 
+                  placeholder="Votre mot de passe" 
+                  required 
+                  autocomplete="current-password"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="login-type">
+                  Type de compte <span class="required">*</span>
+                </label>
+                <select id="login-type" required>
+                  <option value="">Choisir...</option>
+                  <option value="patiente">Je suis une patiente</option>
+                  <option value="professionnel">Je suis un professionnel de santé</option>
+                </select>
+              </div>
+
+              <div class="form-group form-group-button">
+                <button type="submit" class="btn-primary btn-login-submit">
+                  Se connecter
+                </button>
+              </div>
+            </div>
+
+            <div id="login-message" class="message" style="margin-top: 1rem;"></div>
+          </form>
+        </div>
+
+        <!-- Formulaire d'inscription -->
+        <div class="login-form-container hidden" id="register-form-container" role="tabpanel" aria-labelledby="tab-register">
+          <form id="register-form" class="login-form">
+            <div class="form-group">
+              <label for="register-type">
+                Type de compte <span class="required">*</span>
+              </label>
+              <select id="register-type" required>
+                <option value="">Choisir...</option>
+                <option value="patiente">Je suis une patiente</option>
+                <option value="professionnel">Je suis un professionnel de santé</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="register-phone">
+                Numéro de téléphone <span class="required">*</span>
+              </label>
+              <input 
+                type="tel" 
+                id="register-phone" 
+                placeholder="Exemple: +2250700000000" 
+                required 
+                autocomplete="tel"
+              />
+              <small class="form-help-text">
+                Ce numéro servira à vous connecter
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="register-password">
+                Mot de passe <span class="required">*</span>
+              </label>
+              <input 
+                type="password" 
+                id="register-password" 
+                placeholder="Au moins 6 lettres ou chiffres" 
+                minlength="6"
+                required 
+                autocomplete="new-password"
+              />
+              <small class="form-help-text">
+                Minimum 6 caractères
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="register-password-confirm">
+                Confirmer le mot de passe <span class="required">*</span>
+              </label>
+              <input 
+                type="password" 
+                id="register-password-confirm" 
+                placeholder="Répétez votre mot de passe" 
+                minlength="6"
+                required 
+                autocomplete="new-password"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="register-name">
+                Nom complet <span class="required">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="register-name" 
+                placeholder="Votre nom et prénom" 
+                required 
+                autocomplete="name"
+              />
+            </div>
+
+            <button type="submit" class="btn-primary btn-block">
+              Créer mon compte
+            </button>
+
+            <div id="register-message" class="message" style="margin-top: 1rem;"></div>
+          </form>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 2rem; color: white;">
+        <p style="font-size: 0.875rem;">
+          💡 <strong>Astuce:</strong> Activez le son 🔊 en bas à droite pour entendre les instructions
+        </p>
+      </div>
+    </div>
+
+    <!-- Système de lecture audio -->
+    <script src="utils/audio-helper.js"></script>
+    <!-- Système d'icônes -->
+    <script src="utils/icons.js"></script>
+    <!-- Système d'authentification -->
+    <script src="utils/auth.js"></script>
+    <script>
+      // Initialiser les icônes au chargement
+      document.addEventListener('DOMContentLoaded', function() {
+        if (window.getIcon) {
+          // Icônes des onglets
+          const loginTabIcon = document.getElementById('tab-login-icon');
+          if (loginTabIcon) {
+            loginTabIcon.innerHTML = window.getIcon('lock', 18, 'currentColor');
+          }
+          
+          const registerTabIcon = document.getElementById('tab-register-icon');
+          if (registerTabIcon) {
+            registerTabIcon.innerHTML = window.getIcon('user-plus', 18, 'currentColor');
+          }
+        }
+      });
+    </script>
+    <script>
+      // Gestion des onglets
+      document.addEventListener('DOMContentLoaded', function() {
+        const loginTab = document.getElementById('tab-login');
+        const registerTab = document.getElementById('tab-register');
+        const loginForm = document.getElementById('login-form-container');
+        const registerForm = document.getElementById('register-form-container');
+
+        function switchTab(tab) {
+          if (tab === 'login') {
+            loginTab.classList.add('active');
+            loginTab.setAttribute('aria-selected', 'true');
+            registerTab.classList.remove('active');
+            registerTab.setAttribute('aria-selected', 'false');
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+          } else {
+            registerTab.classList.add('active');
+            registerTab.setAttribute('aria-selected', 'true');
+            loginTab.classList.remove('active');
+            loginTab.setAttribute('aria-selected', 'false');
+            registerForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+          }
+        }
+
+        loginTab.addEventListener('click', () => switchTab('login'));
+        registerTab.addEventListener('click', () => switchTab('register'));
+
+        // Navigation au clavier pour les onglets
+        const tabs = [loginTab, registerTab];
+        tabs.forEach((tab, index) => {
+          tab.addEventListener('keydown', (e) => {
+            let targetIndex = index;
+            if (e.key === 'ArrowLeft') {
+              targetIndex = index > 0 ? index - 1 : tabs.length - 1;
+            } else if (e.key === 'ArrowRight') {
+              targetIndex = index < tabs.length - 1 ? index + 1 : 0;
+            } else if (e.key === 'Home') {
+              targetIndex = 0;
+            } else if (e.key === 'End') {
+              targetIndex = tabs.length - 1;
+            } else {
+              return;
+            }
+            e.preventDefault();
+            tabs[targetIndex].focus();
+            switchTab(targetIndex === 0 ? 'login' : 'register');
+          });
+        });
+
+        // Gestion du formulaire de connexion
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const phone = document.getElementById('login-phone').value.trim();
+          const password = document.getElementById('login-password').value;
+          const type = document.getElementById('login-type').value;
+          const messageDiv = document.getElementById('login-message');
+
+          if (!phone || !password || !type) {
+            messageDiv.className = 'message error';
+            messageDiv.textContent = 'Veuillez remplir tous les champs obligatoires';
+            if (window.toast) window.toast.error('Veuillez remplir tous les champs');
+            return;
+          }
+
+          try {
+            const success = await window.auth.login(phone, password, type);
+            if (success) {
+              messageDiv.className = 'message success';
+              messageDiv.textContent = 'Connexion réussie ! Redirection...';
+              if (window.toast) window.toast.success('Connexion réussie !');
+              
+              setTimeout(() => {
+                if (type === 'patiente') {
+                  window.location.href = 'index-patriente.html';
+                } else {
+                  window.location.href = 'index-professionnel.html';
+                }
+              }, 1000);
+            } else {
+              messageDiv.className = 'message error';
+              messageDiv.textContent = 'Numéro de téléphone ou mot de passe incorrect';
+              if (window.toast) window.toast.error('Numéro de téléphone ou mot de passe incorrect');
+            }
+          } catch (error) {
+            messageDiv.className = 'message error';
+            messageDiv.textContent = 'Erreur lors de la connexion';
+            if (window.toast) window.toast.error('Erreur lors de la connexion');
+            console.error(error);
+          }
+        });
+
+        // Gestion du formulaire d'inscription
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const type = document.getElementById('register-type').value;
+          const phone = document.getElementById('register-phone').value.trim();
+          const password = document.getElementById('register-password').value;
+          const passwordConfirm = document.getElementById('register-password-confirm').value;
+          const name = document.getElementById('register-name').value.trim();
+          const messageDiv = document.getElementById('register-message');
+
+          if (!type || !phone || !password || !passwordConfirm || !name) {
+            messageDiv.className = 'message error';
+            messageDiv.textContent = 'Veuillez remplir tous les champs obligatoires';
+            if (window.toast) window.toast.error('Veuillez remplir tous les champs');
+            return;
+          }
+
+          if (password !== passwordConfirm) {
+            messageDiv.className = 'message error';
+            messageDiv.textContent = 'Les mots de passe ne correspondent pas';
+            if (window.toast) window.toast.error('Les mots de passe ne correspondent pas');
+            return;
+          }
+
+          if (password.length < 6) {
+            messageDiv.className = 'message error';
+            messageDiv.textContent = 'Le mot de passe doit contenir au moins 6 caractères';
+            if (window.toast) window.toast.error('Le mot de passe doit contenir au moins 6 caractères');
+            return;
+          }
+
+          try {
+            const success = await window.auth.register(type, phone, password, name);
+            if (success) {
+              messageDiv.className = 'message success';
+              messageDiv.textContent = 'Compte créé avec succès ! Redirection...';
+              if (window.toast) window.toast.success('Compte créé avec succès !');
+              
+              setTimeout(() => {
+                if (type === 'patiente') {
+                  window.location.href = 'index-patriente.html';
+                } else {
+                  window.location.href = 'index-professionnel.html';
+                }
+              }, 1000);
+            } else {
+              messageDiv.className = 'message error';
+              messageDiv.textContent = 'Ce numéro de téléphone est déjà utilisé';
+              if (window.toast) window.toast.error('Ce numéro de téléphone est déjà utilisé');
+            }
+          } catch (error) {
+            messageDiv.className = 'message error';
+            messageDiv.textContent = 'Erreur lors de la création du compte';
+            if (window.toast) window.toast.error('Erreur lors de la création du compte');
+            console.error(error);
+          }
+        });
+      });
+    </script>
+    <!-- Composants UX -->
+    <script src="utils/ux-components.js"></script>
+  </body>
+</html>
+

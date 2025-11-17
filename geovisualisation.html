@@ -168,6 +168,55 @@
     </header>
 
     <main role="main" style="padding: 1.5rem;">
+      <!-- Filtres globaux -->
+      <section class="card" id="global-filters-section" style="margin-bottom: 1rem; padding: 1rem; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0;">
+        <div style="margin-bottom: 0.75rem;">
+          <h3 style="margin: 0; font-size: 1rem; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🔍</span>
+            <span>Filtres de contexte</span>
+          </h3>
+          <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; color: #64748b;">Filtrez les données selon votre zone d'intervention</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+          <label style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <span style="font-weight: 500; color: #374151; font-size: 0.875rem;">Pays:</span>
+            <select id="global-filter-pays" style="padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; background: white;">
+              <option value="all">Tous les pays</option>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <span style="font-weight: 500; color: #374151; font-size: 0.875rem;">Ville:</span>
+            <select id="global-filter-ville" style="padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; background: white;">
+              <option value="all">Toutes les villes</option>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <span style="font-weight: 500; color: #374151; font-size: 0.875rem;">Centre de santé:</span>
+            <select id="global-filter-centre" style="padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; background: white;">
+              <option value="all">Tous les centres</option>
+            </select>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <span style="font-weight: 500; color: #374151; font-size: 0.875rem;">Période:</span>
+            <select id="global-filter-periode" style="padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; background: white;">
+              <option value="week">Cette semaine</option>
+              <option value="month" selected>Ce mois</option>
+              <option value="quarter">Ce trimestre</option>
+              <option value="year">Cette année</option>
+              <option value="all">Toutes les périodes</option>
+            </select>
+          </label>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center; justify-content: flex-end; padding-top: 0.75rem; border-top: 1px solid #e2e8f0;">
+          <button id="reset-global-filters" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+            🔄 Réinitialiser
+          </button>
+          <div id="filter-summary" style="font-size: 0.875rem; color: #64748b; font-style: italic;">
+            <span id="filter-summary-text">Aucun filtre actif</span>
+          </div>
+        </div>
+      </section>
+
       <section class="card" id="map-card">
         <div class="card-header-with-icon">
           <span class="card-icon" id="map-card-icon"></span>
@@ -223,6 +272,10 @@
     <!-- Scripts de l'application -->
     <script src="utils/icons.js"></script>
     <script src="utils/health-facilities.js"></script>
+    <!-- Système de filtres globaux -->
+    <script src="utils/global-filters.js"></script>
+    <!-- Améliorations du tableau de bord -->
+    <script src="utils/dashboard-enhancements.js"></script>
     <script src="app-geovisualisation.js" defer></script>
     <script src="utils/mobile-nav.js" defer></script>
     

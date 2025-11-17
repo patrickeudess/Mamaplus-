@@ -13,36 +13,45 @@ const DEFAULT_PATIENTES = [
     prenom: "Awa",
     nom: "Koffi",
     age: 28,
-    ville: "Bamako",
+    pays: "Côte d'Ivoire",
+    ville: "Abidjan",
+    centre_sante: "CHU de Cocody",
+    periode: "month",
     distance_centre: 2.3,
     risque: "moyen",
     derniere_venue: "2024-03-15",
     prochaine_cpn: "2024-04-20",
-    telephone: "+22370000001"
+    telephone: "+2250700000001"
   },
   {
     id: 2,
     prenom: "Mariam",
     nom: "Kouadio",
     age: 19,
-    ville: "Bamako",
+    pays: "Côte d'Ivoire",
+    ville: "Abidjan",
+    centre_sante: "CHU de Yopougon",
+    periode: "week",
     distance_centre: 5.1,
     risque: "élevé",
     derniere_venue: "2024-03-10",
     prochaine_cpn: "2024-04-18",
-    telephone: "+22370000002"
+    telephone: "+2250700000002"
   },
   {
     id: 3,
     prenom: "Fatou",
     nom: "Diallo",
     age: 32,
-    ville: "Sikasso",
+    pays: "Côte d'Ivoire",
+    ville: "Bouaké",
+    centre_sante: "CHU de Bouaké",
+    periode: "month",
     distance_centre: 1.8,
     risque: "faible",
     derniere_venue: "2024-03-20",
     prochaine_cpn: "2024-04-19",
-    telephone: "+22370000003"
+    telephone: "+2250700000003"
   }
 ];
 
@@ -64,7 +73,12 @@ function getPatientes() {
 
 // Fonction pour calculer les alertes prioritaires
 function calculatePriorityAlerts() {
-  const patientes = getPatientes();
+  let patientes = getPatientes();
+  
+  // Appliquer les filtres globaux si disponibles
+  if (window.filterPatientesByGlobalFilters) {
+    patientes = window.filterPatientesByGlobalFilters(patientes);
+  }
   const alerts = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -321,6 +335,22 @@ window.handleCall = function(telephone) {
 
 // Initialisation au chargement de la page
 document.addEventListener("DOMContentLoaded", () => {
+  // Charger les filtres sauvegardés
+  if (window.loadSavedFilters) {
+    window.loadSavedFilters();
+  }
+  
+  // Initialiser les filtres globaux
+  if (window.initGlobalFilters) {
+    const allPatientes = getPatientes();
+    window.initGlobalFilters(allPatientes);
+  }
+  
+  // Écouter les changements de filtres
+  window.addEventListener('filtersChanged', () => {
+    renderPriorityAlerts();
+  });
+  
   // Afficher les alertes
   renderPriorityAlerts();
   
